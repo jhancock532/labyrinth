@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>Hallway</title>
+  <title>hallway.html</title>
   <meta name="description" content="Down the corridor.">
   <!-- Who needs a static site generator when you have a keyboard? -->
 
@@ -51,7 +51,7 @@
       let heightPercentage = (scrollPercent * 100).toString() + "%";
       backgroundElement.style.height = heightPercentage;
       
-      if (scrollPercent >= 1){
+      if (scrollPercent >= 0.995){
         window.location.href = "index.html";
       }
     });
