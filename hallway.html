@@ -1,0 +1,60 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Hallway</title>
+  <meta name="description" content="Down the corridor.">
+  <!-- Who needs a static site generator when you have a keyboard? -->
+
+  <style>
+  body {
+    margin: 0;
+    height: 200vh;
+    /* This code only works if the height is 200vh.
+    I could have coded it so that it works for any number.
+    I guess I didn't. I made that choice. */
+  }
+
+  #background {
+    background: black;
+    height: 0%;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="background">
+    <!-- Scrolling is the focus. -->
+  </div>
+  <script>
+    //Code based off WebPage Scrolling Experiment.
+    //https://codepen.io/jhancock532/pen/LYGwbmY
+    //I'd like to remix this for another scene on this site.
+
+    let backgroundElement = document.getElementById("background");
+    let waitingForAnimationFrame = false;
+    let scrollPosition = 0;
+
+    window.addEventListener('scroll', function(e) {
+      //Copied maths from here to find scroll percentage.
+      //https://codepen.io/achudars/pen/Cpast?editors=0010
+      //Found the variable alternatives myself because who wants to use jQuery? ... 
+      
+      let scrollTop = window.scrollY;
+      let winHeight = window.innerHeight;
+      let scrollPercent = scrollTop / winHeight;
+      
+      //I start by stealing code but I keep on changing it until it is unrecognisable.
+      
+      let heightPercentage = (scrollPercent * 100).toString() + "%";
+      backgroundElement.style.height = heightPercentage;
+      
+      if (scrollPercent >= 1){
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
