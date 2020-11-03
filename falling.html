@@ -1,0 +1,85 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>falling.html</title>
+  <meta name="description" content="Down the corridor.">
+  <!-- Who needs a static site generator when you have a keyboard? -->
+
+  <style>
+  body {
+    margin: 0;
+    height: 300vh; /* Added some extra length for more scrolling */
+  }
+
+  #background {
+    background-color: black;
+    height: 200vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    transform: translateY(-200vh);
+    transition: transform 0.01s ease;
+  }
+
+  #help-me-I-dont-understand-your-website-labyrinth-hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* Credit to CSS Tricks https://css-tricks.com/quick-css-trick-how-to-center-an-object-exactly-in-the-center/ */
+    transform: translate(-50%, -50%);
+  }
+  </style>
+</head>
+
+<body>
+  <div id="background">
+    <!-- Scrolling is the focus. -->
+  </div>
+  <div id="help-me-I-dont-understand-your-website-labyrinth-hint">
+    <img src="img/scroll-gif.gif" style="height: 80px" height="81px">
+  </div>
+  <script>
+    //Code based off WebPage Scrolling Experiment.
+    //https://codepen.io/jhancock532/pen/LYGwbmY
+    //I'd like to remix this for another scene on this site.
+
+    let backgroundElement = document.getElementById("background");
+    let helpmeIdontunderstandyourwebsitelabyrinthhint = document.getElementById("help-me-I-dont-understand-your-website-labyrinth-hint");
+    let waitingForAnimationFrame = false;
+    let scrollPosition = 0;
+
+    window.addEventListener('scroll', function(e) {
+      //Copied maths from here to find scroll percentage.
+      //https://codepen.io/achudars/pen/Cpast
+
+      helpmeIdontunderstandyourwebsitelabyrinthhint.style.display = "none";
+      
+      let scrollTop = window.scrollY;
+      let winHeight = window.innerHeight;
+      let scrollPercent = scrollTop / winHeight;
+
+      //Quirks quirks quirks
+      //Did you know that
+      //score * score = score score?
+      //Google it.
+      //Try googling what the punctuation device ... is called.
+      //Dotty.
+      
+      let tranformationAmount = "translateY(" + (-200 + scrollPercent * 100 * 1 / 2).toString() + "vh)";
+      backgroundElement.style.transform = tranformationAmount
+
+      console
+        .log("↓");
+
+      let notMyBirthYear = 1998;
+      
+      if (scrollPercent >= notMyBirthYear / 1000){
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
