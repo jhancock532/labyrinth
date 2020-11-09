@@ -1,0 +1,500 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>b̷r̷o̷k̷e̷n̷.̷h̷t̷m̷l̷</title>
+  <meta name="description" content="Halves of wholes.">
+
+  <style>
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: -1;
+  }
+
+  #meld-gif-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation-name: fadeIn;
+    animation-duration: 1s;
+    animation-delay: 2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  </style>
+</head>
+
+<body>
+
+  <div id="meld-gif-container">
+    <img id="meld-gif" src="img/meld-gif.gif" style="height: 200px">
+  </div>
+
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+
+  <script>
+
+  let meldGif = document.getElementById("meld-gif");
+  //// ---- DAT.GUI CODE ---- ////
+  let params = { 
+    whole: {
+      height: 200,
+      width: 2500,
+      rotation: 1,
+    },
+    parts: {
+      crookedPoints: 50,
+      crookedDepth: 50,
+      minRotation: 0.1,
+      maxRotation: 0.6,
+      minPivotOffset: 0.4,
+      maxPivotOffset: 0.8,
+    },
+    maxRotationStepSize: 0.9,
+    reset: function() {
+      params.whole.rotation = random(TWO_PI);
+      complete = new Whole();
+    },
+    showPivotPoints: false,
+  }
+
+  let gui = new dat.GUI();
+  dat.GUI.toggleHide();
+
+  let wholeFolder = gui.addFolder("Whole");
+  wholeFolder.add(params.whole, "height", -2000, 2000).name("Height");
+  wholeFolder.add(params.whole, "width", -2000, 2000).name("Width");
+
+  let partsFolder = gui.addFolder("Parts");
+  partsFolder.add(params.parts, "crookedPoints", 0, 100).name("No. Points");
+  partsFolder.add(params.parts, "crookedDepth", 0, 100).name("Point Depth");
+  partsFolder.add(params.parts, "minRotation", 0, 1).name("Min. Rotation");
+  partsFolder.add(params.parts, "maxRotation", 0, 1).name("Max. Rotation");
+  partsFolder.add(params.parts, "minPivotOffset", 0, 1).name("Min. Pivot Offset");
+  partsFolder.add(params.parts, "maxPivotOffset", 0, 1).name("Max. Pivot Offset");
+
+  gui.add(params, 'showPivotPoints').name("Show Pivots");
+  gui.add(params, "reset").name("Reset");
+
+  //// ---- P5JS CODE ---- ////
+  // - Documentation - https://p5js.org/reference/
+
+  /*
+    This code is inspired by Daniel Shiffman - https://editor.p5js.org/icm/sketches/BkRHbimhm
+    
+    Limitations
+    use only two colours
+    use no words
+    use only audio and visual stimuli
+    work with the essense of what you want to convey
+    focus on interaction
+    give space for emergent discovery
+    reflect on the nature of the labyrinth
+    
+  */
+
+  let complete; //The code is already finished.
+
+  function pointInPolygon(point, vs) {
+    // Taken from https://github.com/substack/point-in-polygon
+    // Nice explainer at https://observablehq.com/@tmcw/understanding-point-in-polygon
+    // ray-casting algorithm based on
+    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+    let x = point[0], y = point[1];
+
+    let inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+      let xi = vs[i][0], yi = vs[i][1];
+      let xj = vs[j][0], yj = vs[j][1];
+
+      let intersect = ((yi > y) != (yj > y))
+      && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+
+    return inside;
+  };
+
+  function findGradient(vec1, vec2) {
+    return (vec1.y - vec2.y) / (vec1.x - vec2.x);
+  }
+
+  class Half {
+    constructor(points, isTopHalf){
+      this.shapePoints = points;
+      this.rotation = random(params.parts.minRotation, params.parts.maxRotation);
+      this.topHalf = isTopHalf;
+      this.dragging = false;
+      this.inPlace = false; //consider this.
+      this.pivotOffset = this.generateRandomPivotOffset();
+      this.canvasPivotPosition = this.findCanvasPivotPosition();
+      this.oldMousePosition = createVector(0, 0);
+    }
+    
+    findCanvasPivotPosition() {
+      let pivotVector = createVector(0, 0);
+      
+      pivotVector.add(this.pivotOffset.x, this.pivotOffset.y);
+      pivotVector.rotate(params.whole.rotation);
+      pivotVector.add(windowWidth / 2, windowHeight / 2);
+      
+      return pivotVector;
+    }
+    
+    generateRandomPivotOffset(){
+      let scaleFactor = min(windowWidth, windowHeight);
+      
+      let xValue = random(params.parts.minPivotOffset * scaleFactor, params.parts.maxPivotOffset * scaleFactor);
+      let yValue = random(params.parts.minPivotOffset * scaleFactor, params.parts.maxPivotOffset * scaleFactor);
+      
+      /*
+      if (random(0, 1) >= 0.5){
+        xValue = -xValue;
+      }
+      
+      if (random(0, 1) >= 0.5){
+        yValue = -yValue;
+      }*/
+      
+      let result = createVector(xValue, yValue);
+      return result;
+    }
+    
+    generatePivotPoint() {
+      //This wasn't what I wanted. Having the pivot inside the shape doesn't seperate the shapes out for the rotation effect.
+      //I would like my shapes to be completely seperated before they are brought together.
+      let xValues = this.shapePoints.reduce((acc, val) => acc.concat(val[0]), []);
+      let yValues = this.shapePoints.reduce((acc, val) => acc.concat(val[1]), []);
+      
+      let minX = min(xValues), maxX = max(xValues);
+      let minY = min(yValues), maxY = max(yValues);
+      
+      return [random(minX, maxX), random(minY, maxY)];
+    }
+    
+    draw() {
+      push();
+      translate(this.pivotOffset.x, this.pivotOffset.y);
+      
+      /* //debugging the pivot point
+      strokeWeight(3);
+      stroke('red')
+      point(0,0);
+      */
+      if (this.topHalf) {
+        rotate(this.rotation); 
+        //modify with frameCount and overlap random polygon shapes for sick textures.
+        //This requires the background to not be set in the draw function
+      } else {
+        rotate(-this.rotation);
+      }
+      translate(-this.pivotOffset.x, -this.pivotOffset.y);
+      
+      /*
+      if (this.dragging){
+        fill('black');
+      } else {
+        fill('white');
+      } */
+      
+      fill('black');
+      stroke('black');
+      strokeWeight(1);
+      
+      beginShape();
+      for (let i = 0; i < this.shapePoints.length; i++){
+        vertex(this.shapePoints[i][0], this.shapePoints[i][1]);
+      }
+      endShape();
+      
+      pop();
+    }
+    
+    hovered() {
+      this.hovering = this.mouseInShape();
+    }
+    
+    pressed() {
+      this.dragging = this.mouseInShape();
+      
+      if (this.dragging){
+        meldGif.style.display = "none";
+        this.oldMousePosition = createVector(mouseX, mouseY);
+      }
+    }
+    
+    mouseInShape(){
+      //Verify that the mouse x and y is within the bounds of the shape displayed on the screen.
+      //To do so, apply same vector transformations to mouse then check bounds with raytracing function.
+      let mouseVector = createVector(mouseX, mouseY);
+      
+      //Transform according to whole
+      mouseVector.add(-windowWidth / 2, -windowHeight / 2);
+      mouseVector.rotate(-params.whole.rotation);
+      
+      //Transform according to half
+      mouseVector.add(-this.pivotOffset.x, -this.pivotOffset.y);
+      if (this.topHalf) {
+        mouseVector.rotate(-this.rotation);
+      } else {
+        mouseVector.rotate(this.rotation);
+      }
+      mouseVector.add(this.pivotOffset.x, this.pivotOffset.y);
+      
+      let pointToTest = [mouseVector.x, mouseVector.y];
+      
+      return pointInPolygon(pointToTest, this.shapePoints);
+    }
+    
+    released() {
+      this.dragging = false;
+    }
+    
+    updateRotation(){
+      if (this.dragging){
+        this.inPlace = false;
+        let mousePosition = createVector(mouseX, mouseY);
+        
+        /* Mathematics!
+        * https://courses.lumenlearning.com/suny-osalgebratrig/chapter/non-right-triangles-law-of-cosines/
+        *
+        * A = Pivot
+        * B = Old Mouse Position
+        * C = New Mouse Position
+        */
+        
+        let a = mousePosition.dist(this.oldMousePosition);
+        let b = mousePosition.dist(this.canvasPivotPosition);
+        let c = this.oldMousePosition.dist(this.canvasPivotPosition);
+        
+        let angle = acos( (b*b + c*c - a*a) / (2 * b * c) );
+        
+        //Use the gradient of the pivot to the mouse points 
+        //to determine whether we are rotating clockwise or anticlockwise.
+        
+        let dydxPivotOldMouse = findGradient(this.canvasPivotPosition, this.oldMousePosition);
+        let dydxPivotNewMouse = findGradient(this.canvasPivotPosition, mousePosition);
+        
+        if (dydxPivotOldMouse > dydxPivotNewMouse) {
+          //The old mouse point is above the new mouse position
+          //so we want the angle to rotate clockwise
+        } else {
+          angle = -angle;
+        }
+
+        /*
+        if (dydxPivotOldMouse >= 0 && dydxPivotNewMouse >= 0){
+
+        }
+        
+        if (dydxPivotOldMouse < 0 && dydxPivotNewMouse < 0){
+          if (dydxPivotOldMouse > dydxPivotNewMouse) {
+            //The old mouse point is above the new mouse position, and we're to the right of the pivot
+            //Keep on rotating normally.
+            
+          } else {
+            angle = -angle;
+          }
+        }
+        */
+        //let angle = atan2( a / c );
+        
+        /*
+        if (mousePosition.y < this.canvasPivotPosition.y){
+          opposite = -opposite;
+        }
+        
+        if (mousePosition.x < this.oldMousePosition.x){
+          opposite = -opposite;
+        }*/
+        
+        //console.log(angle, opposite, hypotenuse)
+        
+        //Lost in commented code detritus;
+        //How we thought we could control the world.
+        //How we hoped. How we prayed.
+        
+        /*
+        if (mousePosition.x > this.canvasPivotPosition.x){
+          angle = -angle;
+        }
+        
+        if (mousePosition.y > this.canvasPivotPosition.y){
+          angle = -angle;
+        }
+        */
+        
+        //if (mousePosition.x < this.oldMousePosition.x && mousePosition.y < this.oldMousePosition.y){
+        //   angle = -angle;
+        // }
+        
+        if (this.topHalf) {
+          angle = -angle;
+        }
+        
+        let limitedAngle = min(abs(angle), params.maxRotationStepSize);
+        if (angle < 0) {
+          limitedAngle = -limitedAngle;
+        }
+        
+        this.rotation += limitedAngle;
+        
+        if (this.rotation < 0){
+          this.rotation = 0;
+          this.dragging = false;
+          this.inPlace = true;
+        }
+        
+        if (this.rotation > 0.5){
+          this.rotation = 0.5;
+          this.dragging = false;
+        }
+        
+        this.oldMousePosition = createVector(mouseX, mouseY);
+      }
+    }
+  }
+
+  class Whole {
+    constructor() {
+      this.rotation = params.whole.rotation;
+      this.height = params.whole.height;
+      this.width = params.whole.width;
+      this.halves = this.generateHalves();
+    }
+    
+    generateHalves(){
+      let firstHalf = [];
+      let secondHalf = [];
+      
+      firstHalf.push([this.width / 2, -this.height / 2]);
+      firstHalf.push([-this.width / 2, -this.height / 2]);
+      
+      secondHalf.push([this.width / 2, this.height / 2]);
+      secondHalf.push([-this.width / 2, this.height / 2]);
+      
+      for (let i = 0; i <= params.parts.crookedPoints; i++){
+        let xPosition = i / params.parts.crookedPoints * this.width - this.width / 2;
+        let yPosition = random(-params.parts.crookedDepth, params.parts.crookedDepth);
+        
+        firstHalf.push([xPosition, yPosition]);
+        secondHalf.push([xPosition, yPosition]);
+      }
+      
+      firstHalf.push([this.width / 2, -this.height / 2]);
+      secondHalf.push([this.width / 2, this.height / 2]);
+      
+      //The end of all our journeying,
+      //to return to where we started,
+      //and to know the place for the first time.
+      //In the labyrinth, this might make sense, as it is a place of transformation.
+      //In computer code, defining the bounds of the shape, there is no transformation.
+      //What transformation occurs in the digital labyrinths that we walk though? 
+      
+      return [new Half(firstHalf, true), new Half(secondHalf, false)];
+    }
+    
+    draw(){
+      //We can choose to loop though items, or refer to them individually.
+      //The loop is syntax for individual refferal; but they are not the same.
+      //The loop index variable, the hidden compiler optimisations...
+      //if the data is the art, then the source code is the art, 
+      //but in performance, much of the art is lost. Simplified. Interpreted. Compiled.
+      //The leap from code to screen is transculent. 
+      //The leap from screen to eyes is clear.
+      //The leap from eyes to comprehension is opaque.
+      
+      push();
+      translate(windowWidth/2, windowHeight/2);
+      rotate(this.rotation);
+      
+      this.halves[0].hovered();
+      this.halves[0].draw();
+      this.halves[0].updateRotation();
+      
+      this.halves[1].hovered();
+      this.halves[1].draw();
+      this.halves[1].updateRotation();
+      
+      if (this.halves[0].hovering || this.halves[1].hovering){
+        cursor("grab");
+      } else {
+        cursor("default");
+      }
+      if (this.halves[0].dragging || this.halves[1].dragging) {
+        cursor("grabbing");
+      }
+      
+      pop();
+      
+      if (params.showPivotPoints) { //useful debugging tool
+        strokeWeight(9);
+        stroke('green')
+        point(this.halves[0].canvasPivotPosition.x, this.halves[0].canvasPivotPosition.y);
+        stroke('blue')
+        point(this.halves[1].canvasPivotPosition.x, this.halves[1].canvasPivotPosition.y);
+      }
+    }
+  }
+
+  function setup(){
+    createCanvas(windowWidth, windowHeight); 
+    colorMode(HSB, 360, 100, 100, 1); 
+    frameRate(60);
+    
+    params.whole.rotation = random(TWO_PI);
+    meldGif.style.transform = "rotate(" + (params.whole.rotation - 3.14159 / 2).toString() + "rad)";
+    
+    complete = new Whole();
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+
+  function mousePressed(){
+    complete.halves[0].pressed();
+    complete.halves[1].pressed();
+  }
+
+  function mouseReleased() {
+    complete.halves[0].released();
+    complete.halves[1].released();
+  }
+
+
+  function draw(){
+    background('white');
+    complete.draw();
+    
+    if (complete.halves[0].inPlace && complete.halves[1].inPlace) {
+      setTimeout(() => { 
+        window.location.href = "index.html";
+        //params.reset(); 
+      }, 1000);
+      complete.halves[0].inPlace = false;
+    }
+  }
+  </script>
+</body>
+</html>
