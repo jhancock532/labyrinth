@@ -1,0 +1,343 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>cycles.html</title>
+  <meta name="description" content="Round and round.">
+
+  <style>
+  body {
+    margin: 0;
+  }
+
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    border: none;
+    margin: 0;
+    z-index: 10;
+  }
+
+  h1, h2 {
+    color: white;
+    opacity: 0;
+  }
+
+  .padding {
+    padding: 20px 50px;
+    white-space: initial;
+  }
+
+  #up {
+    height: 100vh;
+  }
+
+  #right {
+    display: inline-block;
+    vertical-align: top;
+    height: calc(100vh - 17px);
+    width: 100vw;
+    
+    /* This height used to be 96.5vh until I discovered calc(). Why subtract 17px? See https://codepen.io/sambible/post/browser-scrollbar-widths */
+  }
+
+  #down {
+    display: none;
+    height: calc(100vh - 17px);
+    width: 100vw;
+  }
+
+  #left {
+    display: none;  
+    vertical-align: top;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #section-five {
+    display: none;
+    vertical-align: top;
+    width: 100vw;
+  }
+
+  #scroll-right-container {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    white-space: nowrap;
+  }
+
+  #scroll-left-container {
+    white-space: nowrap;
+  }
+
+  #scroll-down-container {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+/*
+  #meld-gif-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation-name: fadeIn;
+    animation-duration: 1s;
+    animation-delay: 2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  */
+  </style>
+</head>
+
+<body>
+
+  <div id="scroll-right-container">
+    <div id="right">
+      <div class="padding">
+        <h1>2</h1>
+        <h2>Right</h2>
+      </div>
+      <!-- No white space can be left between the below </div><div...> -->
+    </div><div id="scroll-down-container">
+      <!-- These divs are inline-block, so inline whitespace spreads them apart. -->
+    <div id="down">
+      <div class="padding">
+        <h1>3</h1>
+        <h2>Down</h2>
+      </div>
+    </div>
+    <div id="scroll-left-container">
+      <div id="section-five">
+        <div class="padding">
+          <h1>Fin</h1>
+          <h2>.</h2>
+        </div>
+      </div><div id="left"> 
+      <!--Again, no whitespace between the above inline elements. -->
+        <div class="padding">
+          <h1>4</h1>
+          <h2>Left</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="up">
+    <div class="padding">
+      <h1>1</h1>
+      <h2>Up</h2>
+    </div>
+  </div>
+    
+  
+
+  <!--<div id="meld-gif-container">
+    <img id="meld-gif" src="img/meld-gif.gif" style="height: 200px">
+  </div>-->
+
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <!--<script src="js/dat.gui.min.js"></script>-->
+
+  <script>
+    let canvasElement;
+
+    function setup(){
+      const canvas = createCanvas(windowWidth, windowHeight); 
+      canvas.id("canvasElement");
+      canvasElement = document.getElementById("canvasElement");
+      modifyCanvasWidth(-17);
+      
+      fill("black");
+      colorMode(HSB, 360, 100, 100, 1); 
+      frameRate(60);
+      
+      rectMode(CORNERS);
+    }
+
+    function resetLayout(){
+      currentSection = 1;
+
+      sectionOne.style.display = "block";
+      sectionTwo.style.display = "inline-block";
+      sectionThree.style.height = "calc(100vh - 17px)";
+      sectionFour.style.height = "100vh";
+      sectionFour.style.display = "none";
+      sectionFive.style.display = "none";
+      
+      canvasElement.style.width = windowWidth.toString() + "px";
+      canvasElement.style.height = windowHeight.toString() + "px";
+      modifyCanvasWidth(-17);
+
+      scrollRightContainer.style.display = "block";
+      scrollDownContainer.style.display = "inline-block";
+      location.href = "#up";
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      resetLayout();
+    }
+
+    location.href = "#up"; //Scrolls the page down on load.
+
+    const sectionOne = document.getElementById("up");
+    const sectionTwo = document.getElementById("right");
+    const sectionThree = document.getElementById("down");
+    const sectionFour = document.getElementById("left");
+    const sectionFive = document.getElementById("section-five");
+
+    const scrollRightContainer = document.getElementById("scroll-right-container");
+    const scrollLeftContainer = document.getElementById("scroll-left-container");
+    const scrollDownContainer = document.getElementById("scroll-down-container");
+
+    let currentSection = 1;
+    let waitingForAnimationFrame = false;
+    let lastYScrollPosition, lastXScrollPosition; //Use distinct variables for X and Y otherwise section four will trigger section five instantly.
+
+    /** Why does this happen?
+     * The window event listener activates at the same time as the scroll-left-container event listener for a frame as we transition from scrolling down to scrolling left. This is long enough for it to set the lastScrollPosition variable with window.scrollY (zero). Due to a shared waitingForAnimationFrame scroll event limiter, the lastScrollPosition isn't overwritten with scrollRightContainer.scrollLeft as we'd expect: instead of taking the scrollLeft value, the code uses window.scrollY to check if we've scrolled to section five completely. The condition is instantly met, as our lastScrollPosition reads as zero. My event listeners follow the Mozilla docs example on limiting scroll event calls through animation frame requests - https://developer.mozilla.org/en-US/docs/Web/API/Document/scroll_event
+     */
+
+    function modifyCanvasHeight(pixels){
+      canvasElement.style.height = (parseInt(canvasElement.style.height.replace( /^\D+/g, '')) + pixels) + "px";
+    }
+
+    function modifyCanvasWidth(pixels){
+      canvasElement.style.width = (parseInt(canvasElement.style.width.replace( /^\D+/g, '')) + pixels) + "px";
+    }
+
+    // Scroll event listeners trigger CSS updates.
+    window.addEventListener('scroll', function(e) {
+      lastYScrollPosition = window.scrollY;
+      let winHeight = window.innerHeight;
+      
+      if (!waitingForAnimationFrame) {
+        window.requestAnimationFrame(function() {
+          
+          if (currentSection == 1){
+            //We're going bottom to top (100% -> 0%) so subtract % from one.
+            let scrollPercent = 1 - lastYScrollPosition / winHeight;
+            
+            rect(0, windowHeight, windowWidth / 2, windowHeight - scrollPercent * windowHeight / 2);
+            checkIfAtSectionTwo(lastYScrollPosition);
+          }
+          
+          if (currentSection == 3){
+            let scrollPercent = lastYScrollPosition / (scrollDownContainer.clientHeight/2);
+            rect(windowWidth / 2, 0, windowWidth, scrollPercent * windowHeight / 2);
+            
+            checkIfAtSectionFour(lastYScrollPosition);
+          }
+          
+          waitingForAnimationFrame = false;
+        });
+        waitingForAnimationFrame = true;
+      }
+    });
+
+    scrollRightContainer.addEventListener('scroll', function(e) {
+      lastXScrollPosition = scrollRightContainer.scrollLeft;
+      let windowInnerWidth = window.innerWidth;
+      
+      if (!waitingForAnimationFrame) {
+        window.requestAnimationFrame(function() {
+          
+          if (currentSection === 2){
+            let scrollPercent = lastXScrollPosition / windowInnerWidth;
+            rect(0, 0, scrollPercent * windowWidth / 2, windowHeight / 2);
+            
+            checkIfAtSectionThree(lastXScrollPosition);
+          }
+          if (currentSection === 4){
+            let scrollPercent = 1 - lastXScrollPosition / windowInnerWidth;
+            rect(windowWidth, windowHeight / 2, windowWidth - scrollPercent * windowWidth / 2, windowHeight);
+            
+            checkIfAtSectionFive(lastXScrollPosition);
+          }
+          
+          waitingForAnimationFrame = false;
+        });
+        waitingForAnimationFrame = true;
+      }
+    });
+
+    function checkIfAtSectionTwo(scrollPosition) {
+      if (scrollPosition == 0){
+        currentSection = 2;
+
+        sectionOne.style.display = "none";
+        sectionThree.style.display = "inline-block";
+        
+        scrollRightContainer.style.overflowX = "scroll";
+        modifyCanvasHeight(-17);
+        modifyCanvasWidth(17);
+
+        location.href = "#right";
+      }
+    }
+
+    function checkIfAtSectionThree(scrollPosition) {
+      if (scrollPosition == scrollRightContainer.offsetWidth){
+        currentSection = 3;
+        
+        sectionTwo.style.display = "none";
+        sectionThree.style.height = "100vh";
+        sectionFour.style.display = "block";
+        
+        scrollRightContainer.style.overflowX = "hidden";
+        
+        modifyCanvasHeight(17);
+        modifyCanvasWidth(-17);
+
+        location.href = "#down";
+      }
+    }
+
+    function checkIfAtSectionFour(scrollPosition) {
+      if (scrollPosition + 1 >= scrollDownContainer.clientHeight / 2){
+        currentSection = 4;
+        
+        sectionThree.style.display = "none";
+        sectionFive.style.display = "inline-block";
+        sectionFour.style.display = "inline-block";
+        sectionFive.style.height = "calc(100vh - 17px)";
+        sectionFour.style.height = "calc(100vh - 17px)";
+        
+        scrollDownContainer.style.overflowY = "hidden";
+        scrollRightContainer.style.overflowX = "scroll";
+        scrollRightContainer.style.overflowY = "hidden";
+        
+        modifyCanvasHeight(-17);
+        modifyCanvasWidth(17);
+
+        location.href = "#left";
+      }
+    }
+
+    function checkIfAtSectionFive(scrollPosition){
+      if (scrollPosition == 0){
+        window.location.href = "index.html";
+      }
+    }
+  </script>
+</body>
+</html>
