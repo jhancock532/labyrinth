@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>cycles.html</title>
+  <title>going.html</title>
   <meta name="description" content="Round and round.">
 
   <style>
@@ -60,11 +60,25 @@
     width: 100vw;
   }
 
+  /* There is not much to contemplate. But what there is, is worthy of contemplation. */
+
   #section-five {
     display: none;
     vertical-align: top;
     width: 100vw;
   }
+
+  /* Code detritus from old projects, complete buildings ransacked and turned into scaffolding. */
+
+  /* What do the game testing logs from Lego Harry Potter tell us?
+    [LHP-13883] Two Rons don't make a right
+    [LHP-2204] Slytherin Jacuzzi anim done
+    [LHP-22312] LOZ FEEDBACK - When browsing for characters to buy in the shop it looks rubbish
+    There is a reality and a humanity of creation.
+    In the sleek world of web 2.0, this has been replaced with a little heart at the bottom of the webpage,
+    a secret animation, a little comment logged to the console -
+    The emotional space online is heavily edited.
+  */
 
   #scroll-right-container {
     overflow-x: hidden;
@@ -159,6 +173,7 @@
 
   <script>
     let canvasElement;
+    let readyToDraw = false;
 
     function setup(){
       const canvas = createCanvas(windowWidth, windowHeight); 
@@ -171,6 +186,16 @@
       frameRate(60);
       
       rectMode(CORNERS);
+
+      //At all points in this Labyrinth, you have the option to exit.
+      //You can move the cursor to the address bar, type "bbc.com", or click on a bookmark
+      //So your journey at labyr.in/th is over.
+      //Is a journey really over, until the narrative is exhausted?
+      //What about when we start again - commencing a customised Stanley Parable
+      //Your jounery through the impermenant reality of the universe
+      //Get.
+
+      readyToDraw = true;
     }
 
     function resetLayout(){
@@ -227,56 +252,60 @@
 
     // Scroll event listeners trigger CSS updates.
     window.addEventListener('scroll', function(e) {
-      lastYScrollPosition = window.scrollY;
-      let winHeight = window.innerHeight;
-      
-      if (!waitingForAnimationFrame) {
-        window.requestAnimationFrame(function() {
-          
-          if (currentSection == 1){
-            //We're going bottom to top (100% -> 0%) so subtract % from one.
-            let scrollPercent = 1 - lastYScrollPosition / winHeight;
+      if (readyToDraw) {
+        lastYScrollPosition = window.scrollY;
+        let winHeight = window.innerHeight;
+        
+        if (!waitingForAnimationFrame) {
+          window.requestAnimationFrame(function() {
             
-            rect(0, windowHeight, windowWidth / 2, windowHeight - scrollPercent * windowHeight / 2);
-            checkIfAtSectionTwo(lastYScrollPosition);
-          }
-          
-          if (currentSection == 3){
-            let scrollPercent = lastYScrollPosition / (scrollDownContainer.clientHeight/2);
-            rect(windowWidth / 2, 0, windowWidth, scrollPercent * windowHeight / 2);
+            if (currentSection == 1){
+              //We're going bottom to top (100% -> 0%) so subtract % from one.
+              let scrollPercent = 1 - lastYScrollPosition / winHeight;
+              
+              rect(0, windowHeight, windowWidth / 2, windowHeight - scrollPercent * windowHeight / 2);
+              checkIfAtSectionTwo(lastYScrollPosition);
+            }
             
-            checkIfAtSectionFour(lastYScrollPosition);
-          }
-          
-          waitingForAnimationFrame = false;
-        });
-        waitingForAnimationFrame = true;
+            if (currentSection == 3){
+              let scrollPercent = lastYScrollPosition / (scrollDownContainer.clientHeight/2);
+              rect(windowWidth / 2, 0, windowWidth, scrollPercent * windowHeight / 2);
+              
+              checkIfAtSectionFour(lastYScrollPosition);
+            }
+            
+            waitingForAnimationFrame = false;
+          });
+          waitingForAnimationFrame = true;
+        }
       }
     });
 
     scrollRightContainer.addEventListener('scroll', function(e) {
-      lastXScrollPosition = scrollRightContainer.scrollLeft;
-      let windowInnerWidth = window.innerWidth;
-      
-      if (!waitingForAnimationFrame) {
-        window.requestAnimationFrame(function() {
-          
-          if (currentSection === 2){
-            let scrollPercent = lastXScrollPosition / windowInnerWidth;
-            rect(0, 0, scrollPercent * windowWidth / 2, windowHeight / 2);
+      if (readyToDraw) {
+        lastXScrollPosition = scrollRightContainer.scrollLeft;
+        let windowInnerWidth = window.innerWidth;
+        
+        if (!waitingForAnimationFrame) {
+          window.requestAnimationFrame(function() {
             
-            checkIfAtSectionThree(lastXScrollPosition);
-          }
-          if (currentSection === 4){
-            let scrollPercent = 1 - lastXScrollPosition / windowInnerWidth;
-            rect(windowWidth, windowHeight / 2, windowWidth - scrollPercent * windowWidth / 2, windowHeight);
+            if (currentSection === 2){
+              let scrollPercent = lastXScrollPosition / windowInnerWidth;
+              rect(0, 0, scrollPercent * windowWidth / 2, windowHeight / 2);
+              
+              checkIfAtSectionThree(lastXScrollPosition);
+            }
+            if (currentSection === 4){
+              let scrollPercent = 1 - lastXScrollPosition / windowInnerWidth;
+              rect(windowWidth, windowHeight / 2, windowWidth - scrollPercent * windowWidth / 2, windowHeight);
+              
+              checkIfAtSectionFive(lastXScrollPosition);
+            }
             
-            checkIfAtSectionFive(lastXScrollPosition);
-          }
-          
-          waitingForAnimationFrame = false;
-        });
-        waitingForAnimationFrame = true;
+            waitingForAnimationFrame = false;
+          });
+          waitingForAnimationFrame = true;
+        }
       }
     });
 
