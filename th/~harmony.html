@@ -1,0 +1,340 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--All this code is copy pasted by hand.-->
+
+  <title>harmony.html</title>
+  <meta name="description" content="All together now.">
+
+  <style>
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: -1;
+  }
+  </style>
+</head>
+
+<body>
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+  <script>
+  let params = { 
+    whole: {
+      frequencyOffset: 0.1,
+      frequencyScale: 0.1,
+      baseFrequency: 220,
+      frequencyMultiplier: 220,
+      amplitude: 0.2,
+    },
+    parts: {
+      minGoalOffset: 0,
+      minGoalSize: 0.15,
+      minCenterOffset: 0.5,
+      maxCenterOffset: 1,
+    },
+    reset: function() {
+      complete.quarters[0].osc.stop();
+      complete.quarters[1].osc.stop();
+      complete.quarters[2].osc.stop();
+      complete.quarters[3].osc.stop();
+      complete = new Whole();
+    },
+  }
+
+  let gui = new dat.GUI();
+  dat.GUI.toggleHide();
+
+  let wholeFolder = gui.addFolder("Whole");
+  wholeFolder.add(params.whole, "frequencyOffset", -1, 1).name("Goal Start");
+  wholeFolder.add(params.whole, "frequencyScale", -1, 1).name("Goal Scale Up");
+  wholeFolder.add(params.whole, "baseFrequency", -500, 500).name("Base Freq.");
+  wholeFolder.add(params.whole, "frequencyMultiplier", -500, 500).name("Freq. Multiplier");
+  wholeFolder.add(params.whole, "amplitude", 0, 1).name("Volume");
+
+  let partsFolder = gui.addFolder("Parts");
+  partsFolder.add(params.parts, "minCenterOffset", 0, 1).name("Min. Offset");
+  partsFolder.add(params.parts, "maxCenterOffset", 0, 1).name("Max. Offset");
+  partsFolder.add(params.parts, "minGoalOffset", 0, 1).name("Min. Goal Size");
+  partsFolder.add(params.parts, "minGoalSize", 0, 1).name("Min. Goal 2");
+
+  gui.add(params, "reset").name("Reset");
+
+  let complete; //The code is already finished. So now we are here again.
+
+  function pointInPolygon(point, vs, scale) {
+    // Taken from https://github.com/substack/point-in-polygon
+    // Nice explainer at https://observablehq.com/@tmcw/understanding-point-in-polygon
+    // ray-casting algorithm based on
+    // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+    let x = point[0], y = point[1];
+
+    let inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+      let xi = vs[i][0] * scale, yi = vs[i][1] * scale;
+      let xj = vs[j][0] * scale, yj = vs[j][1] * scale;
+
+      let intersect = ((yi > y) != (yj > y))
+      && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+
+    return inside;
+  };
+
+  function findGradient(vec1, vec2) {
+    return (vec1.y - vec2.y) / (vec1.x - vec2.x);
+  }
+
+  class Quarter {
+    constructor(points, direction, frequency){
+      this.shapePoints = points;
+      this.directionFacing = direction;
+      this.frequencyRatio = frequency;
+      this.dragging = false;
+      this.inPlace = false;
+      this.distanceFromCenter = this.randomCenterOffset();
+      this.goalDistance = this.goalDistanceOffset();
+      this.osc = new p5.Oscillator('sine');
+    }
+
+    //Set the quarter's initial distance from the center of the screen.
+    randomCenterOffset(){
+      let scaleFactor = min(windowWidth, windowHeight) / 8;
+      
+      return random(params.parts.minCenterOffset * scaleFactor, params.parts.maxCenterOffset * scaleFactor);
+    }
+    
+    goalDistanceOffset(){
+      return max(params.parts.minGoalOffset + this.frequencyRatio * min(windowWidth, windowHeight) / 8, params.parts.minGoalOffset + params.parts.minGoalSize * min(windowWidth, windowHeight) / 8);
+    }
+    
+    draw() {
+      push();
+      //translate and rotate the shape.
+      translate(windowWidth / 2, windowHeight / 2);
+      
+      switch(this.directionFacing) {
+        case "topLeft": 
+          rotate(0);
+          break;
+        case "topRight": 
+          rotate(HALF_PI);
+          break;
+        case "bottomLeft": 
+          rotate(PI);
+          break;
+        case "bottomRight": 
+          rotate(PI + HALF_PI);
+          break;
+      }
+      
+      //draw the goal
+      fill('white');
+      stroke('black');
+      strokeWeight(1);
+      
+      beginShape();
+      for (let i = 0; i < this.shapePoints.length; i++){
+        vertex(this.shapePoints[i][0] * this.goalDistance, this.shapePoints[i][1] * this.goalDistance);
+      }
+      endShape();
+      
+      //draw the shape
+      fill('black');
+      stroke('black');
+      strokeWeight(1);
+      
+      beginShape();
+      for (let i = 0; i < this.shapePoints.length; i++){
+        vertex(this.shapePoints[i][0] * this.distanceFromCenter, this.shapePoints[i][1] * this.distanceFromCenter);
+      }
+      endShape();
+      
+
+      
+      pop();
+    }
+    
+    hovered() {
+      this.hovering = this.mouseInShape();
+    }
+    
+    pressed() {
+      this.dragging = this.mouseInShape();
+      
+      if (this.dragging){
+        this.osc.start();
+        this.osc.amp(params.whole.amplitude, 0);
+      }
+    }
+    
+    mouseInShape(){
+      //Verify that the mouse x and y is within the bounds of the shape displayed on the screen.
+      //To do so, apply same vector transformations to mouse then check bounds with raytracing function.
+      let mouseVector = createVector(mouseX, mouseY);
+      
+      //Transform according to whole
+      mouseVector.add(-windowWidth / 2, -windowHeight / 2);
+      
+      switch(this.directionFacing) {
+        case "topLeft": 
+          mouseVector.rotate(0);
+          break;
+        case "topRight": 
+          mouseVector.rotate(-HALF_PI);
+          break;
+        case "bottomLeft": 
+          mouseVector.rotate(-PI);
+          break;
+        case "bottomRight": 
+          mouseVector.rotate(-(PI + HALF_PI));
+          break;
+      }
+
+      let pointToTest = [mouseVector.x, mouseVector.y];
+      
+      return pointInPolygon(pointToTest, this.shapePoints, this.distanceFromCenter);
+    }
+    
+    released() {
+      this.dragging = false;
+      this.osc.amp(params.whole.amplitude / 2, 2);
+    }
+    
+    updateDistanceFromCenter(){
+      if (this.dragging){
+        this.inPlace = false;
+        let newDistance = dist(windowWidth/2, windowHeight/2, mouseX, mouseY) * 0.4;
+        this.distanceFromCenter = newDistance;
+        
+        this.osc.freq(params.whole.baseFrequency + this.frequencyRatio * 10 * params.whole.frequencyMultiplier + this.distanceFromCenter - this.goalDistance, 0);
+        
+        if (this.distanceFromCenter <= this.goalDistance){
+          this.distanceFromCenter = this.goalDistance;
+          this.dragging = false;
+          this.inPlace = true;
+        }
+        
+        if (this.distanceFromCenter >= windowHeight/5){
+          this.distanceFromCenter = windowHeight/5 - 5;
+          this.dragging = false;
+        }
+      }
+    }
+  }
+
+  class Whole {
+    constructor() {
+      this.quarters = this.generateQuarters();
+    }
+    
+    generateQuarters(){
+      let shapePoints = [];
+      
+      shapePoints.push([-3, 0]);
+      shapePoints.push([-4, 0]);
+      shapePoints.push([0, 4]);
+      shapePoints.push([0, 3]);
+      shapePoints.push([-3, 0]);
+      
+      //Tracing the path of the labyrinth, I am aware of changes of proprioception
+      //Perhaps something similar; the mind is being coded,
+      //Much like the pattern of manufacture required when making a Stepper
+      
+      return [new Quarter(shapePoints, "topLeft", params.whole.frequencyOffset + params.whole.frequencyScale * 3), 
+              new Quarter(shapePoints, "topRight", params.whole.frequencyOffset),
+              new Quarter(shapePoints, "bottomLeft", params.whole.frequencyOffset + params.whole.frequencyScale), 
+              new Quarter(shapePoints, "bottomRight", params.whole.frequencyOffset + params.whole.frequencyScale * 2)];
+      
+      //Reusing old code, countless new combinations and possibilities appear.
+      //This is the nature of the Garden of Forking Paths, or perhaps Cracking Creativity
+    }
+    
+    draw(){
+      push();
+      
+      let mouseOverShape = false;
+      
+      for (let i = 0; i < this.quarters.length; i++){
+        this.quarters[i].hovered();
+        this.quarters[i].draw();
+        this.quarters[i].updateDistanceFromCenter();
+        
+        if (this.quarters[i].hovering) {
+          mouseOverShape = true;
+          
+          switch(this.quarters[i].directionFacing) {
+            case "topLeft": 
+              cursor("ne-resize");
+              break;
+            case "topRight": 
+              cursor("nw-resize");
+              break;
+            case "bottomLeft": 
+              cursor("ne-resize");
+              break;
+            case "bottomRight": 
+              cursor("nw-resize");
+              break;
+          }
+      
+        }
+      }
+      
+      if (mouseOverShape == false){
+        cursor("default");
+      }
+      
+      pop();
+    }
+  }
+
+  function setup(){
+    createCanvas(windowWidth, windowHeight); 
+    colorMode(HSB, 360, 100, 100, 1); 
+    frameRate(60);
+
+    complete = new Whole();
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+
+  function mousePressed(){
+    for (let i = 0; i < complete.quarters.length; i++){
+      complete.quarters[i].pressed();
+    }
+  }
+
+  function mouseReleased() {
+    for (let i = 0; i < complete.quarters.length; i++){
+      complete.quarters[i].released();
+    }
+  }
+
+
+  function draw(){
+    background('white');
+    complete.draw();
+    
+    if (complete.quarters[0].inPlace && complete.quarters[1].inPlace 
+    && complete.quarters[2].inPlace && complete.quarters[3].inPlace) {
+      setTimeout(() => { 
+        location.href = "~going.html";
+        //params.reset(); 
+      }, 1500);
+      complete.quarters[0].inPlace = false; //to prevent spinning while waiting for the setTimeout to trigger
+    }
+  }
+  </script>
+</body>
+</html>
