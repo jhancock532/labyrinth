@@ -329,7 +329,7 @@
     if (complete.quarters[0].inPlace && complete.quarters[1].inPlace 
     && complete.quarters[2].inPlace && complete.quarters[3].inPlace) {
       setTimeout(() => { 
-        location.href = "~going.html";
+        window.location.href = "~going.html";
         //params.reset(); 
       }, 1500);
       complete.quarters[0].inPlace = false; //to prevent spinning while waiting for the setTimeout to trigger
