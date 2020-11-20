@@ -2,4 +2,4 @@
 
 Welcome. 
 
-[Shall we begin?](labyr.in/th/)
+[Shall we begin?](http://labyr.in/th/)
