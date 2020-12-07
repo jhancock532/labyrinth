@@ -43,8 +43,8 @@
 
   let timingFolder = gui.addFolder("Timing");
 
-  timingFolder.add(params, "numberOfTicks", 0, 120, 1).name("Duration of Cycle");
-  timingFolder.add(params, "intervalFrames", 0, 120, 1).name("Interval Duration");
+  timingFolder.add(params, "numberOfTicks", 1, 120, 1).name("Duration of Cycle");
+  timingFolder.add(params, "intervalFrames", 1, 120, 1).name("Interval Duration");
 
   let displayFolder = gui.addFolder("Display");
   displayFolder.add(params, "radius", 0, 1).name("Radius");

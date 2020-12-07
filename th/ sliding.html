@@ -84,8 +84,6 @@
   // Daniel Shiffman <http://www.shiffman.net>
   // This code is largely remixed from https://editor.p5js.org/icm/sketches/BkRHbimhm
 
-
-
   class Rectangle {
     constructor(x, y, z, w, h, pathLength) {
       this.dragging = false; // Is the object being dragged?
@@ -325,7 +323,7 @@
       
       if (mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h) {
         this.mouseOver = true;
-        return true;
+        return this.directionOfTravel;
       } else {
         this.mouseOver = false;
         return false;
@@ -563,11 +561,14 @@
     }
     
     if (mouseOverRectangle) {
-      cursor('move');
+      if (mouseOverRectangle == "EAST" || mouseOverRectangle == "WEST"){
+        cursor('ew-resize');
+      } else {
+        cursor('ns-resize');
+      }
     } else {
       cursor('default');
     }
-
     
     if (allShapesInPosition && checkShapesInPosition){
       window.location.href = '/th/%20loading.html';
