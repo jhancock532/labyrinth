@@ -1,0 +1,218 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--All this code is copy pasted by hand.-->
+
+  <title>…</title>
+  
+  <meta name="description" content="All together now.">
+
+  <style>
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: -1;
+  }
+  </style>
+</head>
+
+<body>
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+  <script>
+  let params = { 
+    numberOfTicks: 30,
+    intervalFrames: 60,
+    radius: 0.5, //Responsive design changes only according to screen size,
+    //but it would be nice if websites changed according to mood or information overload.
+    //Owait, that's Facebook, innit. Except it's not acting in our best interest.
+    notchLength: 0.05,
+    strokeThickness: 2,
+    reset: function() {
+      resetClock();
+    },
+  }
+
+  let gui = new dat.GUI();
+
+  let timingFolder = gui.addFolder("Timing");
+
+  timingFolder.add(params, "numberOfTicks", 0, 120, 1).name("Duration of Cycle");
+  timingFolder.add(params, "intervalFrames", 0, 120, 1).name("Interval Duration");
+
+  let displayFolder = gui.addFolder("Display");
+  displayFolder.add(params, "radius", 0, 1).name("Radius");
+  displayFolder.add(params, "notchLength", 0, 1).name("Notch");
+
+  gui.add(params, "reset").name("Reset");
+  dat.GUI.toggleHide();
+
+  //https://p5js.org/reference/#/p5.MonoSynth //huh, you can use # as part of a URL sequence.
+  //https://stackoverflow.com/questions/1488280/what-are-the-legal-allowed-characters-for-web-server-file-names-on
+  //You can also use spaces, if you encode them. That's interesting...
+  //https://en.wikipedia.org/wiki/Percent-encoding hmm
+  //Can I have a whitespace appear before my filename???
+
+  //For some reason, VScode wouldn't let me do this.
+  //Yes I can!
+  //https://word.tips.net/T000493_Leading_Spaces_in_Document_File_Names.html
+
+  let finishedLoading = false;
+
+  class Clock {
+    constructor(duration, interval, radius, notch, stroke) {
+      this.numberOfTicks = duration;
+      this.intervalFrames = interval;
+      this.radius = radius;
+      this.notchLength = notch;
+      this.strokeThickness = stroke;
+      this.currentTime = 0;
+      this.currentIntervalFrame = 0;
+      this.running = false;
+      
+      this.noteToPlay = "f4";
+      this.monoSynth = new p5.MonoSynth();
+      this.monoSynth.setADSR(0.1, 0.1, 1, 0.8);
+    }
+    
+    draw(){
+      background("white");
+      
+      stroke("black");
+      fill("white");
+      strokeWeight(this.strokeThickness);
+
+      let windowScale = min(windowWidth/2, windowHeight/2);
+      ellipse(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10);
+      
+      push();
+      
+      for (let i = 0; i < this.numberOfTicks; i++){
+        push();
+        translate(windowWidth / 2, windowHeight / 2);
+        rotate(-PI / 2);
+        
+        rotate(TWO_PI / this.numberOfTicks * i);
+        line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
+        pop();
+      }
+      
+      pop();
+      
+      if (this.running) {
+        this.currentIntervalFrame += 1;
+      }
+      
+      if (this.currentIntervalFrame == this.intervalFrames){
+        this.currentIntervalFrame = 0;
+        this.currentTime += 1;
+        
+        if (this.currentTime == this.numberOfTicks){
+          this.noteToPlay = 'f5';
+        }
+        
+        if (this.currentTime <= this.numberOfTicks){
+          this.playSynth();
+        }
+      }
+      
+      stroke("white");
+      fill("black");
+      
+      if (this.currentTime > this.numberOfTicks && (finishedLoading == false)){
+        window.location.href = '/th/';
+        document.title = "!";
+        finishedLoading = true;
+        //cursor("pointer");
+        //resetClock();
+      }
+      
+      if (this.currentTime > 0){
+        
+        if (this.currentTime == this.numberOfTicks){
+          background("black");
+          
+          ellipse(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10);
+          
+          for (let i = 0; i < this.currentTime + 1; i++){
+            push();
+            translate(windowWidth / 2, windowHeight / 2);
+            rotate(-PI / 2);
+
+            rotate(TWO_PI / this.numberOfTicks * i);
+            line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
+            pop();
+          }
+        } else {
+          arc(windowWidth / 2, windowHeight / 2, windowHeight * 4, windowWidth * 4, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //outside arc
+
+          arc(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10, this.radius * windowScale * 2 + 10, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //inverse clock arc
+
+          for (let i = 0; i < this.currentTime + 1; i++){
+            push();
+            translate(windowWidth / 2, windowHeight / 2);
+            rotate(-PI / 2);
+
+            rotate(TWO_PI / this.numberOfTicks * i);
+            line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
+            pop();
+          }
+        }
+      }
+    }
+    
+    playSynth() {
+      userStartAudio();
+
+      let note = this.noteToPlay;
+      let velocity = 0.2;
+      let time = 0;
+      let dur = 1/8;
+
+      this.monoSynth.play(note, velocity, time, dur);
+    }
+
+  }
+
+  let clock;
+
+  function resetClock(){
+    clock = new Clock(params.numberOfTicks, params.intervalFrames, params.radius, params.notchLength, params.strokeThickness);
+
+  }
+  function setup() {
+    createCanvas(windowWidth, windowHeight); 
+    colorMode(HSB, 360, 100, 100, 1); 
+    frameRate(60);
+    cursor('pointer');
+    
+    resetClock();
+    
+
+
+  }
+
+  function draw() {
+    if (clock.running){
+      cursor('wait');
+    }
+    
+    clock.draw();
+  }
+
+  function mousePressed(){
+    clock.running = true;
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+  </script>
+</body>
+</html>

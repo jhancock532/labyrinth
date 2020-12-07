@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <!--All this code is copy pasted by hand.-->
 
-  <title>harmony.html</title>
+  <title>♯</title> <!--𝅘𝅥𝅮𝅘𝅥𝅗𝅥𝅝-->
+  
   <meta name="description" content="All together now.">
 
   <style>
@@ -67,6 +68,8 @@
   gui.add(params, "reset").name("Reset");
 
   let complete; //The code is already finished. So now we are here again.
+  let noteCount = 0;
+  let notes = ['𝅘𝅥𝅮','𝅘𝅥','𝅗𝅥','𝅝'];
 
   function pointInPolygon(point, vs, scale) {
     // Taken from https://github.com/substack/point-in-polygon
@@ -157,9 +160,7 @@
         vertex(this.shapePoints[i][0] * this.distanceFromCenter, this.shapePoints[i][1] * this.distanceFromCenter);
       }
       endShape();
-      
 
-      
       pop();
     }
     
@@ -221,6 +222,8 @@
           this.distanceFromCenter = this.goalDistance;
           this.dragging = false;
           this.inPlace = true;
+          document.title = notes[noteCount];
+          noteCount += 1;
         }
         
         if (this.distanceFromCenter >= windowHeight/5){
@@ -329,7 +332,7 @@
     if (complete.quarters[0].inPlace && complete.quarters[1].inPlace 
     && complete.quarters[2].inPlace && complete.quarters[3].inPlace) {
       setTimeout(() => { 
-        window.location.href = "~going.html";
+        window.location.href = "%20going.html";
         //params.reset(); 
       }, 1500);
       complete.quarters[0].inPlace = false; //to prevent spinning while waiting for the setTimeout to trigger
