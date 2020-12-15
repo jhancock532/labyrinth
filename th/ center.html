@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>!</title> 
+  <meta name="description" content="The entrance is the exit.">
+
+</head>
+
+<body>
+  <script>
+
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (window.localStorage.getItem("goneBack") == "true"){
+      window.localStorage.setItem("goneBack", "false");
+      webpageIndex -= 1;
+      window.localStorage.setItem("index", webpageIndex.toString());
+      window.location.href = webpages[webpageIndex];
+    }
+
+    function reverseDirection(){
+      window.localStorage.setItem("direction", "outwards");
+      const nextWebpageURL = webpages[webpageIndex];
+      window.localStorage.setItem("index", webpageIndex.toString());
+      window.location.href = nextWebpageURL;
+    }
+  </script>
+  <p onclick="reverseDirection();">You've reached the center.</p>
+</body>
+</html>

@@ -47,6 +47,21 @@
     <img id="meld-gif" src="img/meld-gif.gif" style="height: 200px">
   </div>
 
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+    }
+
+    const nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
+
   <script src="js/p5.min.js"></script>
   <script src="js/p5.sound.min.js"></script>
   <script src="js/dat.gui.min.js"></script>
@@ -407,9 +422,11 @@
       //The end of all our journeying,
       //to return to where we started,
       //and to know the place for the first time.
-      //In the labyrinth, this might make sense, as it is a place of transformation.
-      //In computer code, defining the bounds of the shape, there is no transformation.
-      //What transformation occurs in the digital labyrinths that we walk though? 
+      //The labyrinth is a place of transformation - more so because it is a process.
+
+      //What transformation occurs in modern digital labyrinths? 
+      //Can any transformation occur when the boundaries aren't visible,
+      //when we have lost our focus due to unending distractions?
       
       return [new Half(firstHalf, true), new Half(secondHalf, false)];
     }
@@ -491,7 +508,7 @@
       document.title = "I";
 
       setTimeout(() => { 
-        window.location.href = "%20harmony.html";
+        window.location.href = nextWebpageURL;
         //params.reset();
       }, 1500);
       

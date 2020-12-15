@@ -1,0 +1,221 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--All this code is copy pasted-->
+  <!--All this copy pasted is code-->
+  <!--All this pasted copy is code-->
+  <!--All this, -->
+  <!--All this. -->
+
+  <title>⧉</title>
+  <!-- ⧉ -->
+  
+  <meta name="description" content="All together now.">
+  <style>
+    canvas {
+      display: fixed;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: none;
+      margin: 0;
+      z-index: -1;
+    }
+
+    body {
+      overflow: hidden;
+    }
+  </style><!--Hello, hello, hello. Human procrastination.-->
+</head>
+
+<body>
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    let nextWebpageURL = "";
+
+    if (window.localStorage.getItem("goneBack") == "true"){
+      window.localStorage.setItem("goneBack", "false");
+
+      if (webpageDirection == "inwards"){
+        webpageIndex += 1;
+        window.location.href = webpages[webpageIndex];
+      } else {
+        webpageIndex -= 1;
+        window.location.href = webpages[webpageIndex];
+      }
+    } else {
+      if (webpageDirection == "inwards"){
+        webpageIndex += 1;
+      } else {
+        webpageIndex -= 1;
+      }
+
+      nextWebpageURL = webpages[webpageIndex];
+      window.localStorage.setItem("index", webpageIndex.toString());
+    }
+
+  </script>
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+  <script> 
+  
+  //Framing is grammar //Framed in the script tags //Framed in comments //Framed in systems
+  //A system offers possibilities of interaction - websites frame interactions,
+  //and then we hack the presented frame to peices.
+
+let params = { 
+  minWidth: 0.4,
+  maxWidth: 0.8,
+  minHeight: 0.2,
+  maxHeight: 0.8,
+  marginOfError: 5,
+  numberOfFramingSteps: 4,
+  reset: function() {
+    resetFrame();
+  },
+}
+
+let gui = new dat.GUI();
+
+let frameSizeFolder = gui.addFolder("Frame Size");
+
+frameSizeFolder.add(params, "minWidth", 0, 1).name("Min. Width");
+frameSizeFolder.add(params, "maxWidth", 0, 1).name("Max. Width");
+frameSizeFolder.add(params, "minHeight", 0, 1).name("Min. Height");
+frameSizeFolder.add(params, "maxHeight", 0, 1).name("Max. Height");
+
+gui.add(params, "numberOfFramingSteps", 0, 10).name("No. Resizes");
+  dat.GUI.toggleHide(); //what you doing here, dat.GUI?
+gui.add(params, "marginOfError", 0, 25, 1).name("Error Margin")
+gui.add(params, "reset").name("Reset");
+
+class Frame {
+  //What do we keep in frame, what do we leave out?
+  //Photography reduces a 3D space, constantly changing, into a 2D snapshot
+  //Resize the window to fit the frame
+  //But the window isn't the frame, is it?
+
+  //I think my confusion is that when online, we often forget about the frame
+  //The frame is to be arranged to complete a task, not to be considered
+  //An invincible line of pixels, the frame is <horizontal | vertical>
+    //Until it explodes.
+  
+  constructor(steps, originalWidth, originalHeight) {
+    this.originalHeight = originalHeight;
+    this.originalWidth = originalWidth;
+    this.currentFrameSize = this.generateNewFrame();
+    this.currentStep = 0;
+    this.maxSteps = steps;
+    this.notesToPlay = ["f4", "g4", "a5", "b5", "c6"];
+    this.monoSynth = new p5.MonoSynth();
+    this.monoSynth.setADSR(0.1, 0.1, 1, 0.8);
+  }
+  
+  generateNewFrame(){
+    let w = random(this.originalWidth * params.minWidth, 
+                   this.originalWidth * params.maxWidth);
+    let h = random(this.originalHeight * params.minHeight, 
+                   this.originalHeight * params.maxHeight);
+    return {
+      width: w, 
+      height: h
+    };
+  }
+  
+  draw(){
+    background("black");
+    fill("white");
+    noStroke();
+    rect(0, 0, this.currentFrameSize.width, this.currentFrameSize.height);
+  }
+  
+  checkWindowSize(){
+    if (windowWidth >= this.currentFrameSize.width - params.marginOfError / 2 
+        && windowWidth <= this.currentFrameSize.width + params.marginOfError / 2 ){
+      if (windowHeight >= this.currentFrameSize.height - params.marginOfError / 2
+         && windowHeight <= this.currentFrameSize.height + params.marginOfError / 2){
+        this.currentFrameSize = this.generateNewFrame();
+        this.currentStep += 1;
+        this.playSynth();
+        if (this.currentStep >= this.maxSteps){
+          window.location.href = nextWebpageURL;
+        }
+      }
+    }
+  }
+  
+  playSynth() {
+    userStartAudio();
+
+    let note = this.notesToPlay[this.currentStep % 5];
+    let velocity = 0.2;
+    let time = 0;
+    let dur = 1/8;
+
+    this.monoSynth.play(note, velocity, time, dur);
+  }
+}
+
+let frame;
+
+//Frames are created through definition? through labelling?
+//Or perhaps they are created through perception, but we are often ignorant of them.
+//Imagine the infinity of framings that you live within,
+//A conditioning of reality that can collapse in an instant
+
+function resetFrame(){
+  frame = new Frame(params.numberOfFramingSteps, width, height);
+  frame.draw();
+}
+
+function setup() {
+  createCanvas(windowWidth, windowHeight); 
+  colorMode(HSB, 360, 100, 100, 1); 
+  frameRate(Infinity);
+  resetFrame();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  frame.checkWindowSize();
+  frame.draw();
+}  </script>
+</body>
+</html>
+
+<!--
+  Here's a frame for you.
+  That was the frame. This is another.
+  Frames within frames, raw concepts capturing each other, cascading.
+
+  ┌─────────────────────────────┐
+  │ ┌─────────────────────────┐ │
+  │ │ ┌─────────────────────┐ │ │
+  │ │ │ ┌─────────────────┐ │ │ │
+  │ │ │ │ ┌─────────────┐ │ │ │ │
+  │ │ │ │ │ ┌─────────┐ │ │ │ │ │
+  │ │ │ │ │ │ ┌─────┐ │ │ │ │ │ │
+  │ │ │ │ │ │ ╵ ┌─┐ │ ╵ │ │ │ │ │
+  │ │ │ │ │ └───┘ │ └───┘ │ │ │ │
+  │ │ │ │ └───────┼───────┘ │ │ │
+  │ │ │ └───────┐ │ ┌───────┘ │ │
+  │ │ └───────╴ │ │ │ ╶───────┘ │
+  │ └───────────┘ │ └───────────┘
+  └───────────────┘
+
+  //Follow the frame you've been presented with.
+  //Trace your finger to the center of the labyrinth above.
+  //Trace your cursor to the center of the labyrinth above.
+  //What is the difference?
+
+
+  //Builder's yard.
+  ─ │ ┌ ┐└ ┘ ├ ┤ ┬ ┴ ┼╶ ╴
+  //More at https://www.compart.com/en/unicode/search?q=box#characters
+-->

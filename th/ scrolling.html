@@ -35,6 +35,21 @@
 </head>
 
 <body>
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+    }
+
+    const nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
+
   <div id="background">
     <!-- Scrolling is the focus. -->
   </div>
@@ -77,7 +92,7 @@
       let notMyBirthYear = 1998;
       
       if (scrollPercent >= notMyBirthYear / 1000){
-        window.location.href = "%20broken.html";
+        window.location.href = nextWebpageURL;
       }
     });
   </script>

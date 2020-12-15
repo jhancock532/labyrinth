@@ -129,6 +129,20 @@
 </head>
 
 <body>
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+    }
+
+    const nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
 
   <div id="scroll-right-container">
     <div id="right">
@@ -374,7 +388,7 @@
 
     function checkIfAtSectionFive(scrollPosition){
       if (scrollPosition == 0){
-        window.location.href = "%20sliding.html";
+        window.location.href = nextWebpageURL;
       }
     }
   </script>

@@ -21,6 +21,21 @@
 </head>
 
 <body>
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "outwards"){
+      window.localStorage.setItem("direction", "inwards");
+    }
+
+    webpageIndex = 1;
+    const nextWebpageURL = webpages[webpageIndex];
+
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
+
   <script src="js/p5.min.js"></script>
   <script src="js/p5.sound.min.js"></script>
   <script src="js/dat.gui.min.js"></script>
@@ -196,7 +211,7 @@
         osc.freq(0, 0.5);
         background(0, 0, 0, 1);
 
-        window.location.href = "%20travelling.html";
+        window.location.href = nextWebpageURL;
       }
       
       framesAnimated += 1;

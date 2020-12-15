@@ -24,6 +24,21 @@
 </head>
 
 <body>
+  <script>
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+    }
+
+    const nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
+
   <script src="js/p5.min.js"></script>
   <script src="js/p5.sound.min.js"></script>
   <script src="js/dat.gui.min.js"></script>
@@ -571,7 +586,7 @@
     }
     
     if (allShapesInPosition && checkShapesInPosition){
-      window.location.href = '/th/%20loading.html';
+      window.location.href = nextWebpageURL;
       checkShapesInPosition = false;
     }
   }

@@ -3,7 +3,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
   <title>⎅</title> 
   <!-- (๑*◡*๑) ٩(❛ัᴗ❛ั⁎)ೄ -->
   <meta name="description" content="A labyrinth.">
@@ -11,14 +12,35 @@
 </head>
 
 <body>
+  <script>
+    let websiteList = [
+      "%20entrance.html", 
+      "%20scrolling.html", 
+      "%20broken.html", 
+      "%20harmony.html", 
+      "%20going.html",
+      "%20sliding.html",
+      "%20loading.html",
+      "%20framing.html",
+      "%20back.html",
+      "%20center.html"
+    ];
+
+    window.localStorage.setItem("webpages", JSON.stringify(websiteList));
+    window.localStorage.setItem("index", "0");
+    window.localStorage.setItem("direction", "inwards");
+    window.localStorage.setItem("goneBack", "false");
+  </script>
   <ul>
     <li><a href="%20entrance.html">entrance.html</a></li>
-    <li><a href="%20travelling.html">travelling.html</a></li>
+    <li><a href="%20scrolling.html">scrolling.html</a></li>
     <li><a href="%20broken.html">broken.html</a></li>
     <li><a href="%20harmony.html">harmony.html</a></li>
     <li><a href="%20going.html">going.html</a></li>
     <li><a href="%20sliding.html">sliding.html</a></li>
     <li><a href="%20loading.html">loading.html</a></li>
+    <li><a href="%20framing.html">framing.html</a></li>
+    <li><a href="%20back.html">back.html</a></li>
   </ul>
 </body>
 </html>
