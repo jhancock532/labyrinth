@@ -145,7 +145,11 @@
     }
     
     draw(){
-      stroke("black");
+      if (webpageDirection == "inwards"){
+        stroke("black");
+      } else {
+        stroke("white");
+      }
       noFill();
       strokeWeight(this.strokeThickness);
 
@@ -183,8 +187,14 @@
         }
       }
       
-      stroke("white");
-      fill("black");
+      if (webpageDirection == "inwards"){
+        stroke("white");
+        fill("black");
+      } else {
+        stroke("black");
+        fill("white");
+      }
+
       
       if (this.currentTime > this.numberOfTicks && (finishedLoading == false)){
         window.location.href = nextWebpageURL;
@@ -195,7 +205,11 @@
       if (this.currentTime > 0){
         
         if (this.currentTime >= this.numberOfTicks){
-          background("black");
+          if (webpageDirection == "inwards"){
+            background("black");
+          } else {
+            background("white");
+          }
           
           ellipse(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10);
           
@@ -209,18 +223,34 @@
             pop();
           }
         } else {
-          arc(windowWidth / 2, windowHeight / 2, windowHeight * 4, windowWidth * 4, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //outside arc
+          if (webpageDirection == "inwards"){
+            arc(windowWidth / 2, windowHeight / 2, windowHeight * 4, windowWidth * 4, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //outside arc
 
-          arc(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10, this.radius * windowScale * 2 + 10, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //inverse clock arc
+            arc(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10, this.radius * windowScale * 2 + 10, -HALF_PI, TWO_PI / this.numberOfTicks * this.currentTime -HALF_PI); //inverse clock arc
 
-          for (let i = 0; i < this.currentTime + 1; i++){
-            push();
-            translate(windowWidth / 2, windowHeight / 2);
-            rotate(-PI / 2);
+            for (let i = 0; i < this.currentTime + 1; i++){
+              push();
+              translate(windowWidth / 2, windowHeight / 2);
+              rotate(-PI / 2);
 
-            rotate(TWO_PI / this.numberOfTicks * i);
-            line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
-            pop();
+              rotate(TWO_PI / this.numberOfTicks * i);
+              line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
+              pop();
+            }
+          } else {
+            arc(windowWidth / 2, windowHeight / 2, windowHeight * 4, windowWidth * 4, -HALF_PI - TWO_PI / this.numberOfTicks * this.currentTime, -HALF_PI); //outside arc
+
+            arc(windowWidth / 2, windowHeight / 2, this.radius * windowScale * 2 + 10, this.radius * windowScale * 2 + 10, -HALF_PI - TWO_PI / this.numberOfTicks * this.currentTime, -HALF_PI); //inverse clock arc
+
+            for (let i = 0; i < this.currentTime + 1; i++){
+              push();
+              translate(windowWidth / 2, windowHeight / 2);
+              rotate(-PI / 2);
+
+              rotate(-TWO_PI / this.numberOfTicks * i);
+              line((this.radius - this.notchLength) * windowScale, 0, this.radius * windowScale, 0);
+              pop();
+            }
           }
         }
       }
@@ -271,7 +301,11 @@
 
   function mousePressed(){
     clock.running = true;
-    background("white");
+    if (webpageDirection == "inwards"){
+      background("white");
+    } else {
+      background("black");
+    }
   }
 
   function windowResized() {
@@ -320,10 +354,23 @@
         translate(dash.x, dash.y);
         rotate(dash.rotation);
         
-        stroke('black');
+        if (webpageDirection == "inwards"){
+          stroke('black');
+        } else {
+          stroke('white');
+        }
+
         if (this.lifeSpan < (params.click.fadeOutTime)){
           let opacity = 1 - ((params.click.fadeOutTime - this.lifeSpan) / params.click.fadeOutSpeed);
-          let fillColour = 'rgba(0,0,0,'+ opacity +')';
+          if (opacity < 0){
+            opacity = 0;
+          }
+          let fillColour;
+          if (webpageDirection == "inwards"){
+            fillColour = 'rgba(0,0,0,'+ opacity +')';
+          } else {
+            fillColour = 'rgba(255,255,255,'+ opacity +')';
+          }
           stroke(fillColour);
         }
 
@@ -348,7 +395,12 @@
     }
     
     render() {
+      if (webpageDirection == "inwards"){
       background('white');
+      } else {
+        background('black');
+      }
+
       this.lifeSpan -= 1;
       this.moveDashes();
       this.drawDashes();

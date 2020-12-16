@@ -12,6 +12,8 @@
 
 <body>
   <script>
+    window.onbeforeunload = function() {};
+    //https://stackoverflow.com/questions/829046/how-do-i-detect-if-a-user-has-got-to-a-page-using-the-back-button
 
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
