@@ -5,12 +5,71 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <title>!</title> 
+  <title>.</title> 
   <meta name="description" content="The entrance is the exit.">
+
+  <style>
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      z-index: -1;
+    }
+      
+    .labyrinth-container {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .labyrinth {
+      max-height: 80vh;
+    }
+
+    /* //I would have liked to do another swooping circle, but Firefox doesn't support backdrop filter :(
+    .circle {
+      position: fixed;
+      background-color: black;
+      top: calc(54%);
+      left: calc(50% - 5px);
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      backdrop-filter: invert(100%);
+    }*/
+  </style>
 
 </head>
 
 <body>
+
+  <div class="labyrinth-container">
+    <img class="labyrinth" src="img/cropped labyrinth.png"/>
+  </div>
+
+  <!--<div class="circle"></div>-->
+
+  <!--https://lingojam.com/MirrorYourText -->
+  <!--https://www.messletters.com/en/mirrored/-->
+  <!--Upside down works well ... https://labyr.in/th/ mirror | ɹoɹɹᴉɯ /ɥʇ/uᴉ·ɹʎqɐๅ//:sdʇʇɥ-->
+  <!--Maybe inspired by https://elgoog.im -->
+
+  <!--https://labyr.in/th/ mirror | ɿoɿɿim ⧵ʜɈ⧵ni.ɿγdɒl⧵⧵꞉ƨqɈɈʜ-->
+  <!-- Can't use backslash \ so instead use Solidus operator ⧵ (https://www.compart.com/en/unicode/U+29F5)-->
+  <!-- Can't use | so use ｜,⏐ or ‖ -->
+  <!--
+  https://labyr.in/th/mirror%20%E2%80%96%20%C9%BFo%C9%BF%C9%BFim%E2%A7%B5%CA%9C%C9%88%E2%A7%B5ni.%C9%BF%CE%B3d%C9%92l%E2%A7%B5%E2%A7%B5%EA%9E%89%C6%A8q%C9%88%C9%88%CA%9C
+  -->
+    <!--<p onclick="reverseDirection();">You've reached the center.</p>
+  Sadly onclick doesn't trigger if you're using an amazon TV fire stick browser such as Silk.-->
+
   <script>
     window.onbeforeunload = function() {};
     //https://stackoverflow.com/questions/829046/how-do-i-detect-if-a-user-has-got-to-a-page-using-the-back-button
@@ -33,6 +92,265 @@
       window.location.href = nextWebpageURL;
     }
   </script>
-  <p onclick="reverseDirection();">You've reached the center.</p>
+
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+
+  <script>
+  let params = { 
+    strokeWeight: 1.5,
+    lineSizeDivisor: 50,
+    lineDashSize: 0,
+    lineDashGap: 4,
+    debugCenter: false,
+    reset: function(){
+      currentCheckpoint = 0;
+      goingOutwards = false;
+    },
+  }
+
+  let gui = new dat.GUI();
+  dat.GUI.toggleHide();
+
+  let displayFolder = gui.addFolder("Lines");
+  displayFolder.add(params, "strokeWeight", 0, 10).name("Line Weight");
+  displayFolder.add(params, "lineSizeDivisor", 0, 100).name("Size Divisor");
+  displayFolder.add(params, "lineDashSize", 0, 10).name("Dash Size");
+  displayFolder.add(params, "lineDashGap", 0, 10).name("Dash Gap");
+
+
+  gui.add(params, "debugCenter").name("Debug Center");
+  gui.add(params, "reset").name("Reset");
+
+  let currentCheckpoint = 0;
+  let goingOutwards = false;
+
+  let checkpoints = [
+    {x: 0.049005008635578586, y: 0.3082901554404145, angle: 'E'},
+    {x: 0.05008635578583765, y: 0.15457685664939552, angle: 'NE'},
+    {x: 0.23661485319516407, y: 0.14939550949913644, angle: 'NE'},
+    {x: 0.231433506044905, y: -0.20984455958549222, angle: 'NW'},
+    {x: -0.2504317789291883, y: -0.20984455958549222, angle: 'NE'},
+    {x: -0.2504317789291883, y: 0.20639032815198619, angle: 'NW'},
+    {x: -0.05699481865284974, y: 0.20984455958549222, angle: 'NW'},
+    {x: -0.05699481865284974, y: 0.2651122625215889, angle: 'NE'},
+    {x: -0.2987910189982729, y: 0.2651122625215889, angle: 'NW'},
+    {x: -0.3005181347150259, y: -0.2616580310880829, angle: 'NE'},
+    {x: 0.2849740932642487, y: -0.2599309153713299, angle: 'NW'},
+    {x: 0.2918825561312608, y: 0.2081174438687392, angle: 'NE'},
+    {x: 0.10880829015544041, y: 0.21675302245250433, angle: 'NE'},
+    {x: 0.10880829015544041, y: 0.270293609671848, angle: 'NW'},
+    {x: 0.3436960276338515, y: 0.26856649395509496, angle: 'NE'},
+    {x: 0.3385146804835924, y: -0.3221070811744387, angle: 'NW'},
+    {x: -0.35751295336787564, y: -0.32037996545768566, angle: 'NE'},
+    {x: -0.3540587219343696, y: 0.3238341968911917, angle: 'NW'},
+    {x: -0.008635578583765112, y: 0.3238341968911917, angle: 'NE'},
+    {x: -0.008635578583765112, y: 0.15630397236614854, angle: 'NW'},
+    {x: -0.19861830742659758, y: 0.15112262521588946, angle: 'NW'},
+    {x: -0.20207253886010362, y: -0.15630397236614854, angle: 'NE'},
+    {x: 0.1848013816925734, y: -0.15457685664939552, angle: 'NW'},
+    {x: 0.18825561312607944, y: 0.09585492227979274, angle: 'NE'},
+    {x: 0.04835924006908463, y: 0.09930915371329879, angle: 'NW'},
+    {x: 0.037996545768566495, y: -0.0008635578583765112, angle: 'NW'},
+    {x: -0.046632124352331605, y: -0.0008635578583765112, angle: 'NE'},
+    {x: -0.05699481865284974, y: 0.04404145077720207, angle: 'NE'},
+    {x: -0.09499136442141623, y: 0.047495682210708115, angle: 'NW'},
+    {x: -0.10362694300518134, y: -0.04922279792746114, angle: 'NE'},
+    {x: 0.08808290155440414, y: -0.047495682210708115, angle: 'NW'},
+    {x: 0.09499136442141623, y: 0.04404145077720207, angle: 'NW'},
+    {x: 0.14335060449050085, y: 0.04404145077720207, angle: 'NE'},
+    {x: 0.13644214162348878, y: -0.10449050086355786, angle: 'NW'},
+    {x: -0.14853195164075994, y: -0.10103626943005181, angle: 'NE'},
+    {x: -0.14507772020725387, y: 0.09930915371329879, angle: 'NW'},
+    {x: -0.0069084628670120895, y: 0.10103626943005181, angle: 'NE'}
+  ];
+
+  function setup(){
+    createCanvas(windowWidth, windowHeight); 
+    frameRate(60);
+    cursor("a small rendering of the webpage, trapped within a cursor icon");
+  }
+
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+
+  function setCursor(style){
+    document.getElementsByClassName("labyrinth-container")[0].style.cursor = style;
+  }
+
+  function draw(){
+    //beauty.
+  }
+
+  function draw(){
+    if (goingOutwards){
+        background('black');
+      } else {
+        background('white');
+      }
+    let lineSizeMultiplier = windowHeight / params.lineSizeDivisor;
+
+    let multiplier;
+    if (windowHeight > windowWidth){
+      multiplier = windowWidth;
+    } else {
+      multiplier = windowHeight;
+    }
+
+    if (currentCheckpoint < 0){
+      reverseDirection();
+    }
+
+    if (currentCheckpoint == checkpoints.length || params.debugCenter){
+      let x = -0.0017271157167530224 * multiplier + windowWidth/2;
+      let y = 0.04922279792746114 * multiplier + windowHeight/2;
+      fill("black");
+      circle(x, y, lineSizeMultiplier);
+
+      if (dist(mouseX, mouseY, x, y) < lineSizeMultiplier){
+        setCursor("pointer");
+      } else {
+        setCursor("default");
+      }
+    } else {
+      let i = currentCheckpoint;
+
+      let x1, x2, y1, y2;
+
+      if (checkpoints[i].angle == "NE"){
+        //Line pointing bottom right to the top left
+        x1 = checkpoints[i].x * multiplier - lineSizeMultiplier + windowWidth/2;
+        x2 = checkpoints[i].x * multiplier + lineSizeMultiplier + windowWidth/2;
+        y1 = checkpoints[i].y * multiplier - lineSizeMultiplier + windowHeight/2;
+        y2 = checkpoints[i].y * multiplier + lineSizeMultiplier + windowHeight/2;
+      } 
+      if (checkpoints[i].angle == "NW"){
+        //Line pointing bottom left to the top right
+        x1 = checkpoints[i].x * multiplier - lineSizeMultiplier + windowWidth/2;
+        x2 = checkpoints[i].x * multiplier + lineSizeMultiplier + windowWidth/2;
+        y1 = checkpoints[i].y * multiplier + lineSizeMultiplier + windowHeight/2;
+        y2 = checkpoints[i].y * multiplier - lineSizeMultiplier + windowHeight/2;
+      }
+      if (checkpoints[i].angle == "E"){
+        //Line pointing left to right
+        x1 = checkpoints[i].x * multiplier - lineSizeMultiplier + windowWidth/2;
+        x2 = checkpoints[i].x * multiplier + lineSizeMultiplier + windowWidth/2;
+        y1 = checkpoints[i].y * multiplier + windowHeight/2;
+        y2 = checkpoints[i].y * multiplier + windowHeight/2;
+      }
+      
+      if (dist(mouseX, mouseY, checkpoints[i].x * multiplier + windowWidth/2, checkpoints[i].y * multiplier + windowHeight / 2) < lineSizeMultiplier){
+        if (goingOutwards){
+          currentCheckpoint -= 1;
+        } else {
+          currentCheckpoint += 1;
+        }
+      }
+
+      if (goingOutwards){
+        stroke('white');
+      } else {
+        stroke('black');
+      }
+      strokeWeight(params.strokeWeight);
+      drawingContext.setLineDash([params.lineDashSize, params.lineDashGap]);
+      line(x1, y1, x2, y2);
+      drawingContext.setLineDash([]);
+    }
+
+
+  }
+
+  function mousePressed(){
+    if (currentCheckpoint == checkpoints.length || params.debugCenter){
+      let lineSizeMultiplier = windowHeight / params.lineSizeDivisor;
+      let multiplier;
+      if (windowHeight > windowWidth){
+        multiplier = windowWidth;
+      } else {
+        multiplier = windowHeight;
+      }
+
+      let x = -0.0017271157167530224 * multiplier + windowWidth/2;
+      let y = 0.04922279792746114 * multiplier + windowHeight/2;
+
+      if (dist(mouseX, mouseY, x, y) < lineSizeMultiplier){
+        goBack();
+      }
+    }
+  }
+
+  function goBack(){
+    goingOutwards = true;
+    currentCheckpoint = checkpoints.length - 1;
+    document.getElementsByClassName("labyrinth")[0].style.filter = "invert(100%)";
+    params.debugCenter = false;
+    setCursor("default");
+  }
+
+  /*
+  function mousePressed(){
+    let divisor;
+    if (windowHeight > windowWidth){
+      divisor = windowWidth;
+    } else {
+      divisor = windowHeight;
+    }
+
+    let x = (mouseX - windowWidth/2) / divisor;
+    let y = (mouseY - windowHeight/2) / divisor;
+    let output = "{x: "+x.toString()+", y: "+y.toString()+", angle: 'E'}";
+    console.log(output);
+  } */
+
+  </script>
+
+  <!--The difference between quality content and typical content is that 
+      quality content is something you can enjoy / watch a second time.-->
+
+  <!--The difference between content and internet art is in our engagement.
+      I'm balancing effortful, non-passive engagement (thought, consideration)
+      with simplicity, minimalism (pleasant experience)-->
+
+  <!--All data is open to interpretation.
+      So please do speedrun my video game (if that's how you see it), 
+      You can press H and edit params when running the any% category.
+
+      Data is open to interpretation, but now we can codify its performance.
+      Performance is open to interpretation.
+    -->
+  
+  <!--I wrote several pages of code, hosted them on a server, bought a URL.-->
+
+  <!--Web art is net art - data is being performed across the internet
+      Although I rely on GitHub, Google, CDN distribution networks...
+      Other than my website domain, I will not pay these companies for their work.
+      Think of it as exposure - 
+      Every time someone links to this webpage, you'll probably get some revenue from the ads
+      When people visit the GitHub project, maybe they want to fork it, pay for a pro account?
+      Who knows?
+
+      Anyway, thanks Google. I hope your trawler bot finds my solitary prayer.
+  -->
+
+  <!--
+    You could write a labyrinthine programming language, where code execution follows the rules of a traditional labyrinth
+    One entrance, one exit. But what about state changes?
+    Can't have those. It'd have to be a functional programming language
+
+    print("hello world") ->
+    "hello world"
+    
+    "dlrow olleh"
+  -->
 </body>
 </html>
+
+<!--
+  Many words, little said.
+  Live, beautifully and terribly.
+  Never give up.
+  It is a gift.
+-->

@@ -1,0 +1,453 @@
+<!doctype html>
+<!--doctype html-->
+
+<html lang="en">
+<!--html lang="en"-->
+<head>
+<!--head-->
+  <meta charset="utf-8">
+  <!--meta charset-"utf-8"-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--meta name="viewport" content="width=device-width, initial-scale=1"-->
+
+  <!--Ok, that's enough commentary. Incredibly accurate commentary though.-->
+
+  <title>🞣</title> <!--🞡🞢🞣🞤🞥🞦🞧-->
+  <meta name="description" content="Point and click.">
+
+  <style>
+    canvas {
+      display: fixed;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: none;
+      margin: 0;
+      z-index: -1;
+    }
+
+    body {
+      overflow: hidden;
+    }
+  </style>
+
+</head>
+<body>
+  <script>
+    window.onbeforeunload = function() {};
+    //https://web.archive.org/web/20080723054146/http://www.hunlock.com/blogs/Mastering_The_Back_Button_With_Javascript
+    //Ah, glorious
+
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    let nextWebpageURL = "";
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+    }
+    
+    nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
+  <script src="js/p5.min.js"></script>
+  <script src="js/p5.sound.min.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+  <script>
+
+  let crosshairs = ["🞡","🞢","🞣","🞤","🞥","🞦","🞧"];
+  let crosshairNumber = 2;
+
+  let isAnybodyOutThere = true;
+  let movedOn = false;
+
+  let params = { 
+    numberOfAsteroids: 1,
+    sizeVariance: 0.4,
+    angleVariance: 0.2,
+    maxBabyAsteroids: 4,
+    breakUpForce: 10,
+    deceleration: 0.9,
+    baseAsteroidSize: 20,
+    smash: {
+      lifespan: 40,
+      numberOfParticles: 5,
+      baseForce: 3,
+      forceVariance: 1,
+      deceleration: 0.9,
+      strokeThickness: 1.5,
+    },
+    reset: function() {
+      resetSpace();
+    },
+  }
+  
+  let gui = new dat.GUI();
+  
+  let asteroidFolder = gui.addFolder("Asteroids");
+  asteroidFolder.add(params, "numberOfAsteroids", 1, 5, 1).name("Num. Asteroids");
+  asteroidFolder.add(params, "maxBabyAsteroids", 1, 10, 1).name("Max Children");
+  asteroidFolder.add(params, "baseAsteroidSize", 0, 50).name("Size Divisor");
+  asteroidFolder.add(params, "sizeVariance", 0, 1).name("Bump Diversity");
+  asteroidFolder.add(params, "angleVariance", 0, 1).name("Angle Diversity");
+  asteroidFolder.add(params, "breakUpForce", 0, 50).name("Split Force");
+  asteroidFolder.add(params, "deceleration", 0, 1).name("Deceleration");
+
+  let particleFolder = gui.addFolder("Particles");
+  particleFolder.add(params.smash, "lifespan", 0, 100).name("Lifespan");
+  particleFolder.add(params.smash, "numberOfParticles", 0, 100, 1).name("Num. Particles");
+  particleFolder.add(params.smash, "baseForce", 0, 30).name("Explosive Force");
+  particleFolder.add(params.smash, "forceVariance", 0, 30).name("Force Variation");
+  particleFolder.add(params.smash, "deceleration", 0, 1).name("Deceleration");
+  particleFolder.add(params.smash, "strokeThickness", 0, 10).name("Stroke Weight");
+
+  gui.add(params, "reset").name("Reset");
+  dat.GUI.toggleHide();
+  
+  function pointInPolygon(point, vs) {
+    let x = point[0], y = point[1];
+  
+    let inside = false;
+    for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+      let xi = vs[i][0], yi = vs[i][1];
+      let xj = vs[j][0], yj = vs[j][1];
+  
+      let intersect = ((yi > y) != (yj > y))
+      && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+  
+    return inside;
+  };
+  
+  class SmashEffect {
+    constructor(startX, startY){
+      this.xPosition = startX;
+      this.yPosition = startY;
+      this.lifeSpan = params.smash.lifespan;
+      this.particles = this.generateParticles();
+      this.finished = false;
+    }
+    
+    generateParticles() {
+      let particles = [];
+      
+      for (let i = 0; i < params.smash.numberOfParticles; i++){
+        particles.push({
+          x: this.xPosition,
+          y: this.yPosition,
+          rotation: random(TWO_PI),
+          direction: {x: random(-10, 10), y: random(-10, 10)},
+          magnitude: params.smash.baseForce + random(-params.smash.forceVariance, params.smash.forceVariance),
+          shape: this.generateNewParticleShape()
+        });
+      }
+      
+      return particles;
+    }
+    
+    generateNewParticleShape() {
+      let vertices = [];
+      this.baseRadius = 5;
+      
+      //Decide on a random number of vertices
+      let numVertices = random(4, 8);
+      //Loop around a circle, incremeting angle around the center a random amount
+      let currentAngle = 0;
+      //Each point a random distance from the center of the circle
+      let distanceFromCenter = random(this.baseRadius - this.baseRadius * params.sizeVariance, this.baseRadius + this.baseRadius * params.sizeVariance);
+      
+      vertices.push([distanceFromCenter, 0]);
+      let oldDistanceFromCenter = distanceFromCenter;
+      
+      for (let i = 1; i <= numVertices; i++){
+        currentAngle += random(TWO_PI / numVertices - TWO_PI / numVertices * params.angleVariance, TWO_PI / numVertices)// + TWO_PI / numVertices * params.angleVariance
+        distanceFromCenter = random(this.baseRadius - this.baseRadius * params.sizeVariance, this.baseRadius + this.baseRadius * params.sizeVariance);
+        
+        vertices.push([Math.cos(currentAngle) * distanceFromCenter, Math.sin(currentAngle) * distanceFromCenter]);
+      }
+      
+      vertices.push([oldDistanceFromCenter, 0]);
+      
+      return vertices;
+    }
+    
+    drawParticles() {
+      this.particles.forEach((particle) => {
+        push();
+        translate(particle.x, particle.y);
+        rotate(particle.rotation);
+        stroke("black");
+        fill("white");
+        strokeWeight(params.smash.strokeThickness);
+        
+        beginShape();
+        for (let i = 0; i < particle.shape.length; i++){
+          vertex(particle.shape[i][0], particle.shape[i][1]);
+        }
+        endShape();
+        pop();
+      });
+    }
+    
+    moveParticles() {
+      this.particles.forEach((particle) => {
+        particle.x -= (particle.direction.x * particle.magnitude);
+        particle.y -= (particle.direction.y * particle.magnitude);
+        particle.magnitude *= params.smash.deceleration;
+        particle.rotation += particle.magnitude / 8;
+      });
+      if (this.lifeSpan > 0){
+        this.lifeSpan -= 1;
+      } else {
+        this.finished = true;
+      }
+    }
+    
+    resetParticles() {
+      this.particles = this.generateParticles();
+      this.lifeSpan = params.smash.lifespan;
+    }
+  }
+
+  
+  
+  class Asteroid {
+    constructor(position, level){
+      this.level = level; //Higher level asteroids can split into several lower level asteroids
+      this.position = position;
+      this.childAsteroids = [];
+      this.baseRadius = 0;
+      this.vertices = this.generateVertices();
+      this.force = {x: 0, y:0};
+      this.alive = true;
+      this.invulnerabilityFrames = 5;
+
+      this.notesToPlay = ["G5", "B5", "D5", "E5"];
+      this.monoSynth = new p5.MonoSynth();
+      this.monoSynth.setADSR(0.8, 0.3, 0.1, 0.7);
+    }
+    
+    generateVertices() {
+      let vertices = [];
+      this.baseRadius = windowHeight / params.baseAsteroidSize * this.level;
+      
+      //Decide on a random number of vertices
+      let numVertices = random(4, 8);
+      //Loop around a circle, incremeting angle around the center a random amount
+      let currentAngle = 0;
+      //Each point a random distance from the center of the circle
+      let distanceFromCenter = random(this.baseRadius - this.baseRadius * params.sizeVariance, this.baseRadius + this.baseRadius * params.sizeVariance);
+      
+      vertices.push([distanceFromCenter, 0]);
+      let oldDistanceFromCenter = distanceFromCenter;
+      
+      for (let i = 1; i <= numVertices; i++){
+        currentAngle += random(TWO_PI / numVertices - TWO_PI / numVertices * params.angleVariance, TWO_PI / numVertices)// + TWO_PI / numVertices * params.angleVariance
+        distanceFromCenter = random(this.baseRadius - this.baseRadius * params.sizeVariance, this.baseRadius + this.baseRadius * params.sizeVariance);
+        
+        vertices.push([Math.cos(currentAngle) * distanceFromCenter, Math.sin(currentAngle) * distanceFromCenter]);
+      }
+      
+      vertices.push([oldDistanceFromCenter, 0]);
+      
+      return vertices;
+    }
+    
+    draw(){
+
+      if (this.alive){
+
+            isAnybodyOutThere = true;
+
+        stroke("black");
+
+          fill("white");
+
+        //Existing is black and white
+        //Or at least, that's how we think it is.
+        //It's as if, in a place beyond thought,
+        //there could be a unity of one and nought
+
+        //Others say they've seen the global scope,
+        //All variables as electric equals
+        //What they say is the book from which you read
+        //The book writing of another reader, reading of another book
+        //Eventually, all the symbols are left behind.
+          // ... maybe they weren't even there in the first place?
+
+        strokeWeight(this.level);
+        push();
+        translate(this.position.x, this.position.y);
+        beginShape();
+        for (let i = 0; i < this.vertices.length; i++){
+          vertex(this.vertices[i][0], this.vertices[i][1]);
+        }
+        endShape();
+        pop();
+      }
+  
+      if (this.childAsteroids.length > 0){
+        for (let i = 0; i < this.childAsteroids.length; i++){
+          this.childAsteroids[i].draw();
+        }
+      }
+    }
+    
+    move(){
+      if (this.invulnerabilityFrames > 0){
+        this.invulnerabilityFrames -= 1;
+      }
+      if (this.alive){
+        this.position.x += this.force.x;
+        this.position.y += this.force.y;
+        this.force.x *= params.deceleration;
+        this.force.y *= params.deceleration;
+      }
+      if (this.childAsteroids.length > 0){
+        for (let i = 0; i < this.childAsteroids.length; i++){
+          this.childAsteroids[i].move();
+        }
+      }
+    }
+    
+    click(){
+      if (this.alive) {
+        let pointToTest = [mouseX - this.position.x, mouseY - this.position.y];
+        if (pointInPolygon(pointToTest, this.vertices)){
+          if (this.invulnerabilityFrames == 0){
+            this.breakApart();
+            crosshairNumber += 1;
+            crosshairNumber %= crosshairs.length;
+            document.title = crosshairs[crosshairNumber];
+          }
+        }
+      }
+      if (this.childAsteroids.length > 0){
+        for (let i = 0; i < this.childAsteroids.length; i++){
+          this.childAsteroids[i].click();
+        }
+      }
+    }
+    
+    breakApart(){
+      this.playSynth();
+      this.alive = false;
+      space.smashEffects.push(new SmashEffect(this.position.x, this.position.y));
+      if (this.level > 1){
+        let numberOfBabyAsteroids = round(random(1, params.maxBabyAsteroids));
+        for (let i = 0; i < numberOfBabyAsteroids; i++){
+          let newPosition = {x: this.position.x, y: this.position.y}
+          this.childAsteroids.push(new Asteroid(newPosition, this.level-1));
+        }
+        for (let i = 0; i < numberOfBabyAsteroids; i++){
+          this.childAsteroids[i].force = {x: random(-params.breakUpForce, params.breakUpForce), y: random(-params.breakUpForce, params.breakUpForce)};
+        }
+      }
+    }
+
+    playSynth() {
+      userStartAudio();
+        
+      let note = this.notesToPlay[floor(random(this.notesToPlay.length))];
+      let velocity = this.level / 8;
+      let time = 0;
+      let dur = 1/8;
+  
+      this.monoSynth.play(note, velocity, time, dur);
+    }
+  }
+  
+  class Space {
+    constructor() {
+      this.asteroids = this.generateAsteroids();
+      this.smashEffects = [];
+    }
+    
+    generateAsteroids(){
+      let asteroids = [];
+      
+      for (let i = 0; i < params.numberOfAsteroids; i++){
+        asteroids.push(new Asteroid({x: windowWidth/2, y:windowHeight/2}, 4));
+      }
+      
+      return asteroids;
+    }
+    
+    draw(){
+      background("white");
+      strokeWeight(1);
+      for (let i = 0; i < this.asteroids.length; i++){
+        this.asteroids[i].draw();
+      }
+      for (let i = 0; i < this.smashEffects.length; i++){
+        this.smashEffects[i].drawParticles();
+      }
+    }
+    
+    simulate(){
+      for (let i = 0; i < this.asteroids.length; i++){
+        this.asteroids[i].move();
+      }
+      for (let i = 0; i < this.smashEffects.length; i++){
+        this.smashEffects[i].moveParticles();
+        if (this.smashEffects[i].finished == true){
+          this.smashEffects.splice(i, 1);
+          i -= 1;
+        }
+      }
+    }
+    
+    click(){
+      for (let i = 0; i < this.asteroids.length; i++){
+        this.asteroids[i].click();
+      }
+    }
+  }
+  
+  let space;
+  
+  function resetSpace(){
+    space = new Space();
+  }
+  
+  function setup() {
+    createCanvas(windowWidth, windowHeight); 
+    colorMode(HSB, 360, 100, 100, 1); 
+    frameRate(60);
+    cursor('crosshair');
+    rectMode(CENTER);
+    
+    resetSpace();
+  }
+  
+  function draw() {
+    isAnybodyOutThere = false;
+    space.simulate();
+    space.draw();
+    if (isAnybodyOutThere == false && movedOn == false){
+      movedOn = true;
+      window.location.href = nextWebpageURL;
+    }
+  }
+  
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+  
+  function mouseClicked() { 
+    space.click();
+  }
+</script>
+</body>
+
+<!--This character is the first step for drawing a labyrinth. ⁜ -->
+<!--That makes me wonder... what does the labyrinth of drawing a labyrinth look like?-->
+<!--As it is possible to create source code that outputs itself, can a labyrinth recreate itself?-->
+<!--https://en.wikipedia.org/wiki/Quine_(computing)-->
+<!--Attempts to achieve this effect using pen and paper have been unsuccessful, at least in two dimensions
+    The strange morphing nature of the walls of a labyrinth, and the paths they contain - 
+    The wall can be the path, the path can be the wall - rather like a spiral. -->
