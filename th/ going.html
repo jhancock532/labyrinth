@@ -31,6 +31,28 @@
     z-index: 10;
   }
 
+  #scroll-indicator {
+    position: fixed;
+    top: 75%;
+    left: 25%;
+    transform: translate(-50%, -50%) rotate(180deg);
+    opacity: 0;
+    animation-name: fadeIn;
+    animation-duration: 1s;
+    animation-delay: 2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   h1, h2 {
     color: white;
     opacity: 0;
@@ -102,48 +124,12 @@
     vertical-align: top;
   }
 
-/*
-  #meld-gif-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    animation-name: fadeIn;
-    animation-duration: 1s;
-    animation-delay: 2s;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-  }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  */
+
   </style>
 </head>
 
 <body>
-  <script>
-    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
-    let webpageIndex = parseInt(window.localStorage.getItem("index"));
-    const webpageDirection = window.localStorage.getItem("direction");
-
-    if (webpageDirection == "inwards"){
-      webpageIndex += 1;
-    } else {
-      webpageIndex -= 1;
-    }
-
-    const nextWebpageURL = webpages[webpageIndex];
-    window.localStorage.setItem("index", webpageIndex.toString());
-  </script>
-
   <div id="scroll-right-container">
     <div id="right">
       <div class="padding">
@@ -182,11 +168,26 @@
     </div>
   </div>
     
-  
+  <div id="scroll-indicator">
+    <img src="img/scroll-gif.gif" style="height: 80px">
+  </div>
 
-  <!--<div id="meld-gif-container">
-    <img id="meld-gif" src="img/meld-gif.gif" style="height: 200px">
-  </div>-->
+  <script>
+    let goingInwards = true;
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
+    } else {
+      webpageIndex -= 1;
+      goingInwards = false;
+    }
+
+    const nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+  </script>
 
   <script src="js/p5.min.js"></script>
   <script src="js/p5.sound.min.js"></script>
@@ -195,6 +196,11 @@
   <script>
     let canvasElement;
     let readyToDraw = false;
+    let scrollIndicator = document.getElementById("scroll-indicator");
+
+    if (goingInwards == false){
+      scrollIndicator.style.filter = "invert(1)";
+    }
 
     function setup(){
       const canvas = createCanvas(windowWidth, windowHeight); 
@@ -202,7 +208,15 @@
       canvasElement = document.getElementById("canvasElement");
       modifyCanvasWidth(-17);
       
-      fill("black");
+      if (goingInwards){
+        stroke("black");
+        fill("black");
+      } else {
+        document.getElementsByTagName("BODY")[0].style.background = "black";
+        stroke("white");
+        fill("white");
+      }
+      
       colorMode(HSB, 360, 100, 100, 1); 
       frameRate(60);
       

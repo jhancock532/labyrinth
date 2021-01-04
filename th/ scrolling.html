@@ -24,7 +24,7 @@
     transition: transform 0.01s ease;
   }
 
-  #help-me-I-dont-understand-your-website-labyrinth-hint {
+  #hint {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -36,6 +36,7 @@
 
 <body>
   <script>
+    let goingInwards = true;
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
@@ -44,6 +45,7 @@
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      goingInwards = false;
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -53,47 +55,70 @@
   <div id="background">
     <!-- Scrolling is the focus. -->
   </div>
-  <div id="help-me-I-dont-understand-your-website-labyrinth-hint">
+
+  <div id="hint">
     <img src="img/scroll-gif.gif" style="height: 80px" height="81px">
   </div>
-  <script>
-    //Code based off WebPage Scrolling Experiment.
-    //https://codepen.io/jhancock532/pen/LYGwbmY
-    //I'd like to remix this for another scene on this site.
 
+  <script>
     let backgroundElement = document.getElementById("background");
-    let helpmeIdontunderstandyourwebsitelabyrinthhint = document.getElementById("help-me-I-dont-understand-your-website-labyrinth-hint");
-    let waitingForAnimationFrame = false;
-    let scrollPosition = 0;
+    let hint = document.getElementById("hint");
+    let waitingForAnimationFrame = false, scrollPosition;
+    let hideTheHint = false;
+
+    if (goingInwards){
+      scrollPosition = 0;
+      hideTheHint = true;
+    } else {
+      window.scrollTo(0, document.body.scrollHeight);
+      scrollPosition = window.scrollY;
+      backgroundElement.style.background = "black";
+      document.getElementsByTagName("BODY")[0].style.background = "white";
+      hint.style.filter = "invert(1)";
+      hint.style.transform = "rotate(180deg)"
+    }
 
     window.addEventListener('scroll', function(e) {
       //Copied maths from here to find scroll percentage.
       //https://codepen.io/achudars/pen/Cpast
 
-      helpmeIdontunderstandyourwebsitelabyrinthhint.style.display = "none";
-      
+      if (hideTheHint){
+        hint.style.display = "none";
+      }
+
       let scrollTop = window.scrollY;
       let winHeight = window.innerHeight;
       let scrollPercent = scrollTop / winHeight;
 
-      //Quirks quirks quirks
-      //Did you know that
-      //score * score = score score?
-      //Google it.
-      //Try googling what the punctuation device ... is called.
-      //Dotty.
-      
       let tranformationAmount = "translateY(" + (-200 + scrollPercent * 100 * 1 / 2).toString() + "vh)";
       backgroundElement.style.transform = tranformationAmount
 
-      console
-        .log("⬇");
+      if (goingInwards) {
 
-      let notMyBirthYear = 1998;
-      
-      if (scrollPercent >= notMyBirthYear / 1000){
-        window.location.href = nextWebpageURL;
+        //Quirks quirks quirks
+        //Did you know that
+        //score * score = score score?
+        //Google "score * score ="
+        //Try googling what the punctuation device ... is called.
+
+        console
+          .log("⬇");
+
+        let notMyBirthYear = 1998;
+        
+        if (scrollPercent >= notMyBirthYear / 1000){
+          window.location.href = nextWebpageURL;
+        }
+      } else {
+        console
+          .log("⇧");
+
+        if (scrollPercent <= 0){
+          window.location.href = nextWebpageURL;
+        }
+        hideTheHint = true;
       }
+
     });
   </script>
 </body>

@@ -78,15 +78,9 @@
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
 
-    if (window.localStorage.getItem("goneBack") == "true"){
-      window.localStorage.setItem("goneBack", "false");
-      webpageIndex -= 1;
-      window.localStorage.setItem("index", webpageIndex.toString());
-      window.location.href = webpages[webpageIndex];
-    }
-
     function reverseDirection(){
       window.localStorage.setItem("direction", "outwards");
+      webpageIndex -= 1;
       const nextWebpageURL = webpages[webpageIndex];
       window.localStorage.setItem("index", webpageIndex.toString());
       window.location.href = nextWebpageURL;

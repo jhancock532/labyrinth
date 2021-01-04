@@ -22,6 +22,8 @@
 
 <body>
   <script>
+    let goingInwards = true;
+
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
@@ -30,6 +32,7 @@
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      goingInwards = false;
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -59,9 +62,17 @@
   displayFolder.add(params, "keySpacing", 0, 0.1).name("Key Spacing");
   displayFolder.add(params, "keyCornerRadius", 0, 20).name("Corner Radius");
 
-  gui.add(params, "probabilityKeyAlreadyPressed", 0, 1).name("Keys Pressed");
+  gui.add(params, "probabilityKeyAlreadyPressed", 0, 1).name("% Keys Pressed");
   gui.add(params, "reset").name("Reset");
   dat.GUI.toggleHide();
+
+  let music = ["a4", "e4", "c5", "a4", "e4", "c5",
+               "b4", "e4", "d5", "b4", "e4", "d5",
+               "c4", "a5", "e5", "c4", "a5", "e5",
+               "d4", "a5", "f5", "d4", "a5", "f5",
+               "d4", "gs4", "f5", "d4", "gs4", "f5"];
+  //Adapted from https://musescore.com/user/13609706/scores/5067501, thanks chakktheripper
+  //Related to https://www.youtube.com/watch?v=XA4ERjS30y4 - the use of the fantastical, some parallels with Phillip Pullman's writing
 
   class Key {
     constructor(key, keyCode, pressed, position){
@@ -72,12 +83,21 @@
     }
     
     draw(){
-      stroke("black");
-      fill("white");
+      if (goingInwards){
+        stroke("black");
+        fill("white");
+      } else {
+        stroke("white");
+        fill("black");
+      }
       strokeWeight(params.strokeThickness);
       
       if (this.pressed){
-        fill("black");
+        if (goingInwards){
+          fill("black");
+        } else {
+          fill("white");
+        }
       }
 
       square(this.position.x, this.position.y, windowWidth * params.keySize, params.keyCornerRadius);
@@ -87,9 +107,14 @@
   class Keyboard {
     constructor() {
       this.keys = this.generateKeyboard();
-      this.noteToPlay = "c3";
       this.monoSynth = new p5.MonoSynth();
       this.monoSynth.setADSR(0.1, 0.1, 0, 0.1);
+
+      if (goingInwards){
+        this.noteToPlay = 0;
+      } else {
+        this.noteToPlay = music.length-1;
+      }
     }
     
     generateKeyboard(){
@@ -220,7 +245,11 @@
     }
     
     draw(){
-      background("white");
+      if (goingInwards){
+        background("white");
+      } else {
+        background("black");
+      }
       strokeWeight(1);
       //line(windowWidth / 2, 0, windowWidth / 2, windowHeight);
       
@@ -323,14 +352,34 @@
     playSynth() {
       userStartAudio();
 
-      let note = this.noteToPlay;
-      let velocity = 0.2;
+      let note = music[this.noteToPlay];
+
+      if (goingInwards){
+        this.noteToPlay += 1;
+        if (this.noteToPlay == music.length){
+          this.noteToPlay = 0;
+        }
+      } else {
+        this.noteToPlay -= 1;
+        if (this.noteToPlay < 0){
+          this.noteToPlay = music.length - 1;
+        }
+      }
+      
+      let velocity = 0.5;
       let time = 0;
       let dur = 1/8;
 
       this.monoSynth.play(note, velocity, time, dur);
     }
 
+    checkIfAllKeysPressed(){
+      let allKeysPressed = true;
+      for (let i = 0; i < this.keys.length; i++){
+        allKeysPressed &= this.keys[i].pressed;
+      }
+      return allKeysPressed;
+    }
   }
 
   let keyboard;
@@ -360,6 +409,10 @@
 
   function keyPressed() {
     keyboard.pressKey(keyCode);
+
+    if (keyboard.checkIfAllKeysPressed()){
+      setTimeout(function(){ document.location.href = nextWebpageURL; }, 1000);
+    }
   }</script>
 </body>
 </html>

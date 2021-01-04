@@ -22,11 +22,19 @@
 
 <body>
   <script>
-    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+    let goingOutwards = false;
+    
+    const webpageID = 0;
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
+    if (webpageIndex != webpageID){
+      webpageIndex = webpageID;
+    }
+
+    const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     const webpageDirection = window.localStorage.getItem("direction");
 
     if (webpageDirection == "outwards"){
+      goingOutwards = true;
       window.localStorage.setItem("direction", "inwards");
     }
 
@@ -49,7 +57,11 @@
     reset: function(){
       framesAnimated = 0;
       schwooping = false;
-      background("white");
+      if (goingOutwards){
+        background("black");
+      } else {
+        background("white");
+      }
       cursor("pointer");
     },
     startFrequency: 1000,
@@ -58,7 +70,7 @@
     click: {
       lifespan: 300,
       width: 60,
-      fadeOutTime: 250,
+      fadeOutStarts: 250,
       fadeOutSpeed: 40,
       numberOfDashes: 5,
       dashes: {
@@ -95,9 +107,9 @@
 
   let clickFolder = gui.addFolder("Click");
 
-  clickFolder.add(params.click, 'lifespan', 1, 200, 1).name("Lifespan");
-  clickFolder.add(params.click, 'fadeOutTime', 0, 200, 1).name("Fade Out Time");
-  clickFolder.add(params.click, 'fadeOutSpeed', 0, 200, 1).name("Fade Out Speed");
+  clickFolder.add(params.click, 'lifespan', 1, 500, 1).name("Lifespan");
+  clickFolder.add(params.click, 'fadeOutStarts', 0, 500, 1).name("Fade Starts At");
+  clickFolder.add(params.click, 'fadeOutSpeed', 0, 500, 1).name("Fade Duration");
   clickFolder.add(params.click, 'width', 0, 300, 1).name("Width");
   clickFolder.add(params.click, 'numberOfDashes', 1, 30, 1).name("No. Dashes");
 
@@ -134,6 +146,10 @@
     createCanvas(windowWidth, windowHeight); 
     colorMode(HSB, 360, 100, 100, 1); 
     frameRate(60);
+
+    if(goingOutwards){
+      background("black");
+    }
     
     cursor("pointer"); 
     
@@ -155,8 +171,10 @@
   }
 
   function mousePressed(){
+    
     if (framesAnimated == 0){
-      background(0, 0, 0, 1);
+      background("black");
+      
       setCircleParameters(); //size and speed
       schwooping = true;
       
@@ -166,6 +184,7 @@
       osc.freq(params.startFrequency, 0); //The lower frequencies hit the heart in a raw and direct manner.
       osc.amp(params.amplitude, 0);
     }
+    
   }
 
   function setCircleParameters(){
@@ -179,6 +198,24 @@
     params.circleStartSize = startSize * 2;
     
     params.animationSpeed = startSize / params.animationSpeedDivisor;
+
+    if (goingOutwards){
+      params.circleEndSize = startSize * 2;
+      params.circleStartSize = 1;
+    }
+    
+  }
+
+  function resetEffectForReEntry(){
+    schwooping = false;
+    osc.amp(0, 0.5);
+    osc.freq(params.startFrequency, 0.5);
+    background('white');
+    cursor("pointer");
+    framesAnimated = 0;
+    frameCount = 0;
+    goingOutwards = false;
+    clickHint = new ClickEffect(windowWidth / 2, windowHeight / 2);
   }
 
   function draw(){
@@ -191,15 +228,21 @@
     //Scary.
     
     if (schwooping){
-      background(0, 0, 0, 1);
+      background('black');
+
+      let size, frequency;
+
+      if (goingOutwards){
+        size = framesAnimated * params.animationSpeed + 1;
+        frequency = lerp(params.startFrequency, params.endFrequency, 1 - size / params.circleEndSize);
+      } else {
+        size = params.circleStartSize - framesAnimated * params.animationSpeed;
+        frequency = lerp(params.startFrequency, params.endFrequency, 1 - size / params.circleStartSize);
+      }
       
-      let size = params.circleStartSize - framesAnimated * params.animationSpeed;
-      let frequency = lerp(params.startFrequency, params.endFrequency, 1 - size / params.circleStartSize);
-      
+      console.log(frequency);
       osc.freq(frequency, 0);
       ellipse(mouseX, mouseY, size, size);
-
-
 
       //document.title = "◯";
       document.title = "⭘";
@@ -209,12 +252,18 @@
         schwooping = false;
         osc.amp(0, 0.5);
         osc.freq(0, 0.5);
-        background(0, 0, 0, 1);
+        background('black');
 
         window.location.href = nextWebpageURL;
       }
       
       framesAnimated += 1;
+
+      if (goingOutwards){
+        if (size > params.circleEndSize){
+          this.resetEffectForReEntry();
+        }
+      }
     } else {
       if (frameCount >= 142){
         //The average attention span for mobile users on Facebook
@@ -227,7 +276,6 @@
   class ClickEffect {
     //This effect was based on my original "Click!" motion graphics experiment
     //This was in turn inspired by scotty pilgrim and into the spiderverse
-
     constructor(startX, startY){
       this.xPosition = startX;
       this.yPosition = startY;
@@ -259,23 +307,48 @@
     }
     
     drawDashes() {
+      this.setDashStrokeColour();
+
       this.dashes.forEach((dash) => {
         push();
         translate(dash.x, dash.y);
         rotate(dash.rotation);
-        
-        stroke('black');
-        if (this.lifeSpan < (params.click.fadeOutTime)){
-          let opacity = 1 - ((params.click.fadeOutTime - this.lifeSpan) / params.click.fadeOutSpeed);
-          let fillColour = 'rgba(0,0,0,'+ opacity +')';
-          stroke(fillColour);
-        }
 
         strokeWeight(dash.weight);
-        
         line(0, 0, 0, dash.length);
         pop();
       });
+    }
+
+    setDashStrokeColour(){
+      if (this.lifeSpan <= params.click.fadeOutStarts){
+
+        let currentTimeInFadeOut = params.click.fadeOutStarts - this.lifeSpan;
+        let totalDurationOfFadeOut = params.click.fadeOutSpeed;
+
+        if (currentTimeInFadeOut <= totalDurationOfFadeOut){
+          let opacity = lerp(1, 0, currentTimeInFadeOut / totalDurationOfFadeOut);
+          let fillColour = 'rgba(0,0,0,'+ opacity +')';
+          if (goingOutwards){
+            fillColour = 'rgba(255,255,255,'+ opacity +')';
+          }
+          stroke(fillColour);
+
+        } else {
+          if (goingOutwards){
+            stroke('black');
+          } else {
+            stroke('white');
+          }
+        }
+
+      } else {
+        if (goingOutwards){
+          stroke('white');
+        } else {
+          stroke('black');
+        }
+      }
     }
     
     moveDashes() {
@@ -292,7 +365,11 @@
     }
     
     render() {
-      background('white');
+      if (goingOutwards){
+        background('black');
+      } else {
+        background('white');
+      }
       this.lifeSpan -= 1;
       this.moveDashes();
       this.drawDashes();

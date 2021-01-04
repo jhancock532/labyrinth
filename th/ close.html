@@ -1,0 +1,100 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <title>╳</title> 
+  <meta name="description" content="X it.">
+
+  <style>
+    * {
+      cursor: not-allowed;
+    }
+    
+    #exit-button-container {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #exit-button {
+      max-height: 60vh;
+    }
+
+    #indicator-arrow {
+      position: fixed;
+      height: 100px;
+      width: 100px;
+      right: 40px;
+      top: 0px;
+      opacity: 0;
+    }
+
+    @keyframes flickerAnimation {
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-o-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-moz-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-webkit-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    .animate-flicker {
+      -webkit-animation: flickerAnimation 4s infinite;
+      -moz-animation: flickerAnimation 4s infinite;
+      -o-animation: flickerAnimation 4s infinite;
+      animation: flickerAnimation 4s infinite;
+      animation-delay: 4s;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="exit-button-container">
+    <img id="exit-button" src="img/exit.png"/>
+  </div>
+
+  <img id="indicator-arrow" class="animate-flicker" src="img/clickexit.png">
+
+  <script>
+    const webpageDirection = window.localStorage.getItem("direction");
+  
+    if (webpageDirection != "inwards"){
+      
+      document.getElementById("exit-button-container").style.background = "black";
+      document.getElementById("exit-button").style.filter = "invert(1)";
+      document.getElementById("indicator-arrow").style.filter = "invert(1)";
+    }
+  </script>
+
+  <script>
+    window.onunload = function() {
+      let originalWindow = window.opener;
+      if (originalWindow.closed == false) {
+        originalWindow.moveToNextWebpage();
+      }
+    };
+  </script>
+
+</body>
+</html>

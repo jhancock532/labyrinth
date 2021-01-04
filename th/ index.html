@@ -13,8 +13,6 @@
 
 <body>
   <script>
-    window.onbeforeunload = function() {};
-
     //webpages appear in order of traversal.
     let websiteList = [
       "%20entrance.html", 
@@ -27,12 +25,12 @@
       "%20sliding.html",
       "%20back.html", //The center of the journey to the center
       "%20popup.html",
-      //%20exit.html
+      //%20close.html
 
       "%20loading.html", //this slows things down. A lot...
       "%20target.html", //pick it up with point and click
       "%20refresh.html",
-      "%20resize.html",
+      "%20framing.html",
       "%20center.html"
     ];
 
@@ -41,11 +39,28 @@
     window.localStorage.setItem("direction", "inwards");
     window.localStorage.setItem("goneBack", "false");
     window.localStorage.setItem("refreshed", "false");
-    window.localStorage.setItem("debugging", "false");
-
-    window.location.href = "%20entrance.html";
   </script>
-  <!--If you want to access individual pages of the labyrinth, 
-      you're probably looking for %20index.html. This page links to the labyrinth in debugging mode.-->
+  <ul>
+    <li><a href="%20entrance.html">entrance.html</a></li>
+    <li><a href="%20scrolling.html">scrolling.html</a></li>
+    <li><a href="%20broken.html">broken.html</a></li>
+    <li><a href="%20harmony.html">harmony.html</a></li>
+    <li><a href="%20keyboard.html">keyboard.html</a></li>
+
+    <li><a href="%20going.html">going.html</a></li>
+    <li><a href="%20sliding.html">sliding.html</a></li>
+    <li><a href="%20back.html">back.html</a></li>
+    <li><a href="%20popup.html">popup.html</a></li>
+    <li><a href="%20close.html">close.html</a></li>
+
+    <li><a href="%20target.html">target.html</a></li>
+    <li><a href="%20loading.html">loading.html</a></li>
+    <li><a href="%20resize.html">resize.html</a></li>
+    <li><a href="%20refresh.html">refresh.html</a></li>
+    <li><a href="%20center.html">center.html</a></li>
+    <br>
+    <li><a href="/th/undefined/">undefined</a></li>
+    <li><a href="/th/mirror%20%E2%80%96%20%C9%BFo%C9%BF%C9%BFim%E2%A7%B5%CA%9C%C9%88%E2%A7%B5ni.%C9%BF%CE%B3d%C9%92l%E2%A7%B5%E2%A7%B5%EA%9E%89%C6%A8q%C9%88%C9%88%CA%9C">mirror.html</a></li>
+  </ul>
 </body>
 </html>

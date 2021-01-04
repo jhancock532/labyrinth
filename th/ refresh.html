@@ -1,8 +1,8 @@
 <!--
   I was wondering through a labyrinth,
   when I stopped to ponder this;
-  what are these walls created from?
-  then the walls were nought but mist.
+  How were these walls surrounding us?
+  then the walls became but mist.
 -->
 
 <!doctype html>
@@ -15,4 +15,72 @@
   <title>↻</title> <!--↺-->
   <meta name="description" content="Every performance is unique (with onbeforeunload)">
 
+  <style>
+    * {
+      cursor: progress;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #hint {
+      position: fixed;
+      padding: 100px;
+      border-radius: 50%; /* prevent the square edges glitching out with repeated on-hover event triggers */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(0deg) ;
+      transition: transform 0s;
+      transition-delay: 0s;
+    }
+
+    #hint:hover {
+      transform: translate(-50%, -50%) rotate(360deg);
+      transition: transform 1s;
+      transition-delay: 3s;
+    }
+    
+  </style>
+
 </head>
+
+<body>
+  <div id="hint">
+    <img id="refresh-circle" src="img/refresh.png" style="height: 200px">
+  </div>
+
+  <!--<img id="indicator-arrow" class="animate-flicker" src="img/clickexit.png">-->
+
+  <script>
+    const refreshed = window.localStorage.getItem("refreshed");
+    const webpageDirection = window.localStorage.getItem("direction");
+
+    if (refreshed == "true"){
+      const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+      let webpageIndex = parseInt(window.localStorage.getItem("index"));
+      if (webpageDirection == "inwards"){
+        webpageIndex += 1;
+      } else {
+        webpageIndex -= 1;
+      }
+
+      const nextWebpageURL = webpages[webpageIndex];
+      window.localStorage.setItem("index", webpageIndex.toString());
+      window.localStorage.setItem("refreshed", "false");
+      window.location.href = nextWebpageURL;
+    } else {
+      window.localStorage.setItem("refreshed", "true");
+    }
+
+    if (webpageDirection != "inwards"){
+      document.getElementsByTagName("body")[0].style.background = "black";
+      document.getElementById("hint").style.background = "black";
+      document.getElementById("refresh-circle").style.filter = "invert(1)";
+      document.title = "↺";
+    }
+  </script>
+
+</body>

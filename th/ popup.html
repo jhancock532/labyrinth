@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>🗗</title>
+    <!--https://www.compart.com/en/unicode/U+1F5D7-->
+    <!--🕲🕳🕴-->
+    <meta charset="utf-8">
+    <meta name="description" content="Allow popups to continue.">
+
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #hint {
+        cursor: copy;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      #popup {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+<body>
+
+  <div id="hint">
+    <img onclick="openWindow()" id="popup" src="img/popup.png" style="height: 60vh;">
+  </div>
+
+<script>
+  window.onbeforeunload = function() {};
+  //https://web.archive.org/web/20080723054146/http://www.hunlock.com/blogs/Mastering_The_Back_Button_With_Javascript
+
+  let goingInwards = true;
+
+  const webpages = JSON.parse(window.localStorage.getItem("webpages"));
+  let webpageIndex = parseInt(window.localStorage.getItem("index"));
+  const webpageDirection = window.localStorage.getItem("direction");
+
+  //Check if the visitor is going back from the back page;
+  if (window.localStorage.getItem("goneBack") == "true"){
+    webpageIndex -= 1;
+    window.localStorage.setItem("index", webpageIndex.toString());
+    window.localStorage.setItem("goneBack", "false");
+    window.location.href = webpages[webpageIndex];
+  }
+
+  if (webpageDirection == "inwards"){
+    webpageIndex += 1;
+  } else {
+    webpageIndex -= 1;
+    goingInwards = false;
+    document.getElementById("hint").style.filter = "invert(1)";
+    document.getElementsByTagName("body")[0].style.background = "black";
+  }
+
+  const nextWebpageURL = webpages[webpageIndex];
+  window.localStorage.setItem("index", webpageIndex.toString());
+</script>
+
+<script>
+function openWindow() {
+  var exitWindow = window.open("/th/%20close.html", "exit", "width=600,height=500");
+
+  setTimeout(function(){
+    if(!exitWindow || exitWindow.closed || typeof exitWindow.closed=='undefined') {
+      moveToNextWebpage();
+    }
+  }, 20000); //In case they don't allow popups.
+}
+
+function moveToNextWebpage() {
+  document.location.href = nextWebpageURL;
+}
+</script>
+
+</body>
+</html>

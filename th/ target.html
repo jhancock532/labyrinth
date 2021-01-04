@@ -38,6 +38,8 @@
     //https://web.archive.org/web/20080723054146/http://www.hunlock.com/blogs/Mastering_The_Back_Button_With_Javascript
     //Ah, glorious
 
+    let goingInwards = true;
+
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
@@ -48,6 +50,7 @@
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      goingInwards = false;
     }
     
     nextWebpageURL = webpages[webpageIndex];

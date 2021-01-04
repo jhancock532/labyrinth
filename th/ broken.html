@@ -28,6 +28,7 @@
     animation-delay: 2s;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
+    pointer-events: none;
   }
 
   @keyframes fadeIn {
@@ -48,6 +49,7 @@
   </div>
 
   <script>
+    let goingInwards = true;
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
@@ -56,6 +58,7 @@
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      goingInwards = false;
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -157,7 +160,13 @@
   class Half {
     constructor(points, isTopHalf){
       this.shapePoints = points;
-      this.rotation = random(params.parts.minRotation, params.parts.maxRotation);
+
+      if (goingInwards) {
+        this.rotation = random(params.parts.minRotation, params.parts.maxRotation);
+      } else {
+        this.rotation = 0.01; //Show there is a crack, interaction indicator
+      }
+
       this.topHalf = isTopHalf;
       this.dragging = false;
       this.inPlace = false; //consider this.
@@ -231,9 +240,16 @@
       } else {
         fill('white');
       } */
+
+      if (goingInwards) {
+        fill('black');
+        stroke('black');
+      } else {
+        fill('white');
+        stroke('white');
+      }
       
-      fill('black');
-      stroke('black');
+
       strokeWeight(1);
       
       beginShape();
@@ -373,16 +389,23 @@
         }
         
         this.rotation += limitedAngle;
+
+
         
         if (this.rotation < 0){
           this.rotation = 0;
           this.dragging = false;
-          this.inPlace = true;
+          if (goingInwards){
+            this.inPlace = true;
+          }
         }
         
         if (this.rotation > 0.5){
           this.rotation = 0.5;
           this.dragging = false;
+          if (goingInwards == false){
+            this.inPlace = true;
+          }
         }
         
         this.oldMousePosition = createVector(mouseX, mouseY);
@@ -483,6 +506,10 @@
     meldGif.style.transform = "rotate(" + (params.whole.rotation - 3.14159 / 2).toString() + "rad)";
     
     complete = new Whole();
+
+    if (goingInwards == false){
+      document.getElementById("meld-gif-container").style.display = "none";
+    }
   }
 
   function windowResized() {
@@ -501,18 +528,27 @@
 
 
   function draw(){
-    background('white');
+    if (goingInwards){
+      background('white');
+    } else {
+      background('black');
+    }
+    
     complete.draw();
     
     if (complete.halves[0].inPlace && complete.halves[1].inPlace) {
-      document.title = "I";
-
+      if (goingInwards) {
+        document.title = "I";
+      } else {
+        document.title = "ꝇ"
+      }
+      
       setTimeout(() => { 
         window.location.href = nextWebpageURL;
-        //params.reset();
       }, 1500);
       
-      complete.halves[0].inPlace = false;
+      complete.halves[0].inPlace = false; 
+      //prevent new location href requests being called every frame
     }
   }
   </script>

@@ -3,16 +3,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <!--All this code is copy pasted-->
-  <!--All this copy pasted is code-->
-  <!--All this pasted copy is code-->
-  <!--All this, -->
-  <!--All this. -->
 
   <title>⧉</title>
-  <!-- ⧉ -->
-  
-  <meta name="description" content="All together now.">
+  <meta name="description" content="Restore down.">
+
   <style>
     canvas {
       display: fixed;
@@ -25,16 +19,53 @@
     }
 
     body {
+      margin: 0;
+      height: 100vh;
       overflow: hidden;
     }
-  </style><!--Hello, hello, hello. Human procrastination.-->
+
+    #restore-down-window-hint {
+      position: fixed;
+      top: 20%;
+      right: 0%;
+      transform: translate(-50%, -50%);
+      filter: invert(1);
+    }
+
+    #resize-window-hint {
+      display: none;
+      position: fixed;
+      opacity: 1;
+      transition: opacity 1s;
+      bottom: 0%;
+      right: 0%;
+      filter: invert(1);
+    }
+
+    #fullscreen-window-hint {
+      display: none;
+      position: fixed;
+      top: 0%;
+      right: 5%;
+    }
+  </style>
 </head>
 
 <body>
+  <div id="restore-down-window-hint">
+    <img id="restore-down" src="img/restore-down.gif">
+  </div>
+
+  <div id="resize-window-hint">
+    <img id="resize-window" src="img/resize.gif">
+  </div>
+
+  <div id="fullscreen-window-hint">
+    <img id="fullscreen" src="img/maximise.gif">
+  </div>
+
   <script>
-    window.onbeforeunload = function() {};
-    //https://web.archive.org/web/20080723054146/http://www.hunlock.com/blogs/Mastering_The_Back_Button_With_Javascript
-    //Ah, glorious
+    let goingInwards = true;
 
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
@@ -42,32 +73,29 @@
 
     let nextWebpageURL = "";
 
-    if (window.localStorage.getItem("goneBack") == "true"){
-      window.localStorage.setItem("goneBack", "false");
-
-      if (webpageDirection == "inwards"){
-        webpageIndex += 1;
-        window.location.href = webpages[webpageIndex];
-      } else {
-        webpageIndex -= 1;
-        window.location.href = webpages[webpageIndex];
-      }
+    if (webpageDirection == "inwards"){
+      webpageIndex += 1;
     } else {
-      if (webpageDirection == "inwards"){
-        webpageIndex += 1;
-      } else {
-        webpageIndex -= 1;
-      }
+      webpageIndex -= 1;
+      goingInwards = false;
 
-      nextWebpageURL = webpages[webpageIndex];
-      window.localStorage.setItem("index", webpageIndex.toString());
+      document.getElementById("restore-down-window-hint").style.filter = "none";
+      document.getElementById("resize-window-hint").style.filter = "none";
+      document.getElementById("fullscreen").style.filter = "invert(1)";
     }
 
+    nextWebpageURL = webpages[webpageIndex];
+    window.localStorage.setItem("index", webpageIndex.toString());
+    
+
   </script>
+
   <script src="js/p5.min.js"></script>
   <script src="js/p5.sound.min.js"></script>
   <script src="js/dat.gui.min.js"></script>
   <script> 
+
+  //This file used to be called framing.html
   
   //Framing is grammar //Framed in the script tags //Framed in comments //Framed in systems
   //A system offers possibilities of interaction - websites frame interactions,
@@ -109,7 +137,7 @@ class Frame {
   //But the window isn't the frame, is it?
 
   //I think my confusion is that when online, we often forget about the frame
-  //The frame is to be arranged to complete a task, not to be considered
+  //The frame is arranged to complete a task, not to be considered
   //An invincible line of pixels, the frame is <horizontal | vertical>
     //Until it explodes.
   
@@ -119,7 +147,7 @@ class Frame {
     this.currentFrameSize = this.generateNewFrame();
     this.currentStep = 0;
     this.maxSteps = steps;
-    this.notesToPlay = ["f4", "g4", "a5", "b5", "c6"];
+    this.notesToPlay = ["f4", "g4", "a5", "b5", "c5", "d5"];
     this.monoSynth = new p5.MonoSynth();
     this.monoSynth.setADSR(0.1, 0.1, 1, 0.8);
   }
@@ -136,7 +164,7 @@ class Frame {
   }
   
   draw(){
-    if (webpageDirection == "inwards"){
+    if (goingInwards){
       background("black");
       fill("white");
     } else {
@@ -155,7 +183,12 @@ class Frame {
         this.currentFrameSize = this.generateNewFrame();
         this.currentStep += 1;
         this.playSynth();
-        if (this.currentStep >= this.maxSteps){
+        if (this.currentStep == this.maxSteps){
+          this.currentFrameSize.width = this.originalWidth;
+          this.currentFrameSize.height = this.originalHeight;
+          document.getElementById("fullscreen-window-hint").style.display = "block";
+        }
+        if (this.currentStep > this.maxSteps){
           window.location.href = nextWebpageURL;
         }
       }
@@ -165,7 +198,7 @@ class Frame {
   playSynth() {
     userStartAudio();
 
-    let note = this.notesToPlay[this.currentStep % 5];
+    let note = this.notesToPlay[this.currentStep % 6];
     let velocity = 0.2;
     let time = 0;
     let dur = 1/8;
@@ -193,8 +226,21 @@ function setup() {
   resetFrame();
 }
 
+let windowRestoredDown = false;
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+
+  if (windowRestoredDown == true){
+    document.getElementById("resize-window-hint").style.opacity = "0";
+  }
+  
+  if (windowRestoredDown == false){
+    document.getElementById("restore-down-window-hint").style.display = "none";
+    document.getElementById("resize-window-hint").style.display = "block";
+    windowRestoredDown = true;
+  }
+
   frame.checkWindowSize();
   frame.draw();
 }  </script>
@@ -202,9 +248,9 @@ function windowResized() {
 </html>
 
 <!--
-  Here's a frame for you.
-  That was the frame. This is another.
-  Frames within frames, raw concepts capturing each other, cascading.
+  [Here's a frame for you.]
+  [[That was the frame.] This is another.]
+  Frames within frames, concepts capturing each other, cascading.
 
   ┌─────────────────────────────┐
   │ ┌─────────────────────────┐ │
@@ -224,8 +270,6 @@ function windowResized() {
   //Follow the frame you've been presented with.
   //Trace your finger to the center of the labyrinth above, then trace it out.
   //Trace your cursor to the center of the labyrinth above, then trace it out.
-  //What is the difference?
-
 
   //Builder's yard.
   ─ │ ┌ ┐└ ┘ ├ ┤ ┬ ┴ ┼╶ ╴

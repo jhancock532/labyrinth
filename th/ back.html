@@ -7,14 +7,94 @@
   <title>↩</title> <!--⎗ this is the offical character, but it's hard to see. -->
   <meta name="description" content="Go back.">
 
+  <style>
+    * {
+      cursor: alias;
+    }
+    
+    #go-back-button-container {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #go-back-button {
+      max-height: 60vh;
+    }
+
+    #indicator-arrow {
+      position: fixed;
+      transform: scaleX(-1);
+      height: 100px;
+      width: 100px;
+      left: 15px;
+      top: 0px;
+      opacity: 0;
+    }
+
+    @keyframes flickerAnimation {
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-o-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-moz-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    @-webkit-keyframes flickerAnimation{
+      0%   { opacity:0; }
+      50%  { opacity:1; }
+      100% { opacity:0; }
+    }
+    .animate-flicker {
+      -webkit-animation: flickerAnimation 4s infinite;
+      -moz-animation: flickerAnimation 4s infinite;
+      -o-animation: flickerAnimation 4s infinite;
+      animation: flickerAnimation 4s infinite;
+      animation-delay: 4s;
+    }
+  </style>
+
 </head>
 
 <body>
+  <div id="go-back-button-container">
+    <img id="go-back-button" src="img/back.png"/>
+  </div>
+
+  <img id="indicator-arrow" class="animate-flicker" src="img/clickexit.png">
+
   <script>
     window.localStorage.setItem("goneBack", "true");
+    const webpageDirection = window.localStorage.getItem("direction");
+    if (webpageDirection != "inwards"){
+      document.getElementById("go-back-button-container").style.background = "black";
+      document.getElementById("go-back-button").style.filter = "invert(1)";
+      document.getElementById("indicator-arrow").style.filter = "invert(1)";
+    }
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 <!--
   I had a dream of a labyrinth, a labyrinth of Borges.
   I a scenario was occuring repeatedly,
