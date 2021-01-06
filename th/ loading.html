@@ -23,6 +23,8 @@
 
 <body>
   <script>
+    window.onbeforeunload = function() {};
+    
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");

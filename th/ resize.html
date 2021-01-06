@@ -33,13 +33,51 @@
     }
 
     #resize-window-hint {
-      display: none;
       position: fixed;
-      opacity: 1;
+      opacity: 0;
       transition: opacity 1s;
+      height: 50px;
       bottom: 0%;
       right: 0%;
       filter: invert(1);
+    }
+
+    #resize-to-here-indicators {
+      position: fixed;
+      bottom: 0%;
+      right: 0%;
+      top: 0%;
+      left: 0%;
+    }
+
+    #resize-to-here-indicators > img {
+      height: 50px;
+      position: fixed;
+    }
+
+    #arrowOne {
+      transform: rotate(180deg);
+      opacity: 0;
+      transition: opacity 2s;
+    }
+
+    #arrowTwo {
+      filter: invert(1);
+      opacity: 0;
+      transition: opacity 2s;
+    }
+
+    #arrowThree {
+      transform: rotate(90deg);
+      opacity: 0;
+      transition: opacity 2s;
+    }
+
+    #arrowFour {
+      filter: invert(1);
+      transform: rotate(270deg);
+      opacity: 0;
+      transition: opacity 2s;
     }
 
     #fullscreen-window-hint {
@@ -64,6 +102,13 @@
     <img id="fullscreen" src="img/maximise.gif">
   </div>
 
+  <div id="resize-to-here-indicators">
+    <img id="arrowOne" src="img/arrow.png">
+    <img id="arrowTwo" src="img/arrow.png">
+    <img id="arrowThree" src="img/arrow.png">
+    <img id="arrowFour" src="img/arrow.png">
+  </div>
+
   <script>
     let goingInwards = true;
 
@@ -72,6 +117,11 @@
     const webpageDirection = window.localStorage.getItem("direction");
 
     let nextWebpageURL = "";
+
+    let arrowOne = document.getElementById("arrowOne");
+    let arrowTwo = document.getElementById("arrowTwo");
+    let arrowThree = document.getElementById("arrowThree");
+    let arrowFour = document.getElementById("arrowFour");
 
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
@@ -82,6 +132,11 @@
       document.getElementById("restore-down-window-hint").style.filter = "none";
       document.getElementById("resize-window-hint").style.filter = "none";
       document.getElementById("fullscreen").style.filter = "invert(1)";
+
+      arrowOne.style.filter = "invert(1)";
+      arrowTwo.style.filter = "none";
+      arrowThree.style.filter = "invert(1)";
+      arrowFour.style.filter = "none";
     }
 
     nextWebpageURL = webpages[webpageIndex];
@@ -157,6 +212,18 @@ class Frame {
                    this.originalWidth * params.maxWidth);
     let h = random(this.originalHeight * params.minHeight, 
                    this.originalHeight * params.maxHeight);
+
+    arrowOne.style.top = (h - 50).toString() + "px";
+    arrowOne.style.left = (w / 2).toString() + "px";
+
+    arrowTwo.style.top = (h).toString() + "px";
+    arrowTwo.style.left = (w / 2).toString() + "px";
+
+    arrowThree.style.top = (h / 2).toString() + "px";
+    arrowThree.style.left = (w - 50).toString() + "px";
+
+    arrowFour.style.top = (h / 2).toString() + "px";
+    arrowFour.style.left = (w).toString() + "px";
     return {
       width: w, 
       height: h
@@ -186,6 +253,10 @@ class Frame {
         if (this.currentStep == this.maxSteps){
           this.currentFrameSize.width = this.originalWidth;
           this.currentFrameSize.height = this.originalHeight;
+          arrowOne.style.opacity = 0;
+          arrowTwo.style.opacity = 0;
+          arrowThree.style.opacity = 0;
+          arrowFour.style.opacity = 0;
           document.getElementById("fullscreen-window-hint").style.display = "block";
         }
         if (this.currentStep > this.maxSteps){
@@ -230,14 +301,14 @@ let windowRestoredDown = false;
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-
-  if (windowRestoredDown == true){
-    document.getElementById("resize-window-hint").style.opacity = "0";
-  }
   
   if (windowRestoredDown == false){
     document.getElementById("restore-down-window-hint").style.display = "none";
-    document.getElementById("resize-window-hint").style.display = "block";
+    document.getElementById("resize-window-hint").style.opacity = "1";
+    arrowOne.style.opacity = "1";
+    arrowTwo.style.opacity = "1";
+    arrowThree.style.opacity = "1";
+    arrowFour.style.opacity = "1";
     windowRestoredDown = true;
   }
 

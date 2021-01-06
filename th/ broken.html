@@ -31,6 +31,17 @@
     pointer-events: none;
   }
 
+  #split-gif-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s;
+    transition-delay: 2s;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -45,7 +56,11 @@
 <body>
 
   <div id="meld-gif-container">
-    <img id="meld-gif" src="img/meld-gif.gif" style="height: 200px">
+    <img id="meld-gif" src="img/meld.gif" style="height: 200px">
+  </div>
+
+  <div id="split-gif-container">
+    <img id="split-gif" src="img/split.gif" style="height: 200px">
   </div>
 
   <script>
@@ -54,11 +69,15 @@
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
 
+    let meldGif = document.getElementById("meld-gif");
+    let splitGif = document.getElementById("split-gif");
+
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      splitGif.style.opacity = "1";
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -71,7 +90,7 @@
 
   <script>
 
-  let meldGif = document.getElementById("meld-gif");
+  
   //// ---- DAT.GUI CODE ---- ////
   let params = { 
     whole: {
@@ -113,12 +132,7 @@
   gui.add(params, 'showPivotPoints').name("Show Pivots");
   gui.add(params, "reset").name("Reset");
 
-  //// ---- P5JS CODE ---- ////
-  // - Documentation - https://p5js.org/reference/
-
   /*
-    This code is inspired by Daniel Shiffman - https://editor.p5js.org/icm/sketches/BkRHbimhm
-    
     Limitations
     use only two colours
     use no words
@@ -127,7 +141,6 @@
     focus on interaction
     give space for emergent discovery
     reflect on the nature of the labyrinth
-    
   */
 
   let complete; //The code is already finished.
@@ -163,13 +176,17 @@
 
       if (goingInwards) {
         this.rotation = random(params.parts.minRotation, params.parts.maxRotation);
+        this.noise = new p5.Noise("white");
+        this.noise.start();
+        this.noise.amp(0.01, 0);
       } else {
         this.rotation = 0.01; //Show there is a crack, interaction indicator
+        this.noise = new p5.Noise("brown");
       }
 
       this.topHalf = isTopHalf;
       this.dragging = false;
-      this.inPlace = false; //consider this.
+      this.inPlace = false;
       this.pivotOffset = this.generateRandomPivotOffset();
       this.canvasPivotPosition = this.findCanvasPivotPosition();
       this.oldMousePosition = createVector(0, 0);
@@ -270,6 +287,7 @@
       
       if (this.dragging){
         meldGif.style.display = "none";
+        splitGif.style.display = "none";
         this.oldMousePosition = createVector(mouseX, mouseY);
       }
     }
@@ -389,14 +407,13 @@
         }
         
         this.rotation += limitedAngle;
-
-
         
         if (this.rotation < 0){
           this.rotation = 0;
           this.dragging = false;
           if (goingInwards){
             this.inPlace = true;
+            this.noise.amp(0, 1);
           }
         }
         
@@ -405,6 +422,8 @@
           this.dragging = false;
           if (goingInwards == false){
             this.inPlace = true;
+            this.noise.start();
+            this.noise.amp(0.01, 0);
           }
         }
         
@@ -450,6 +469,9 @@
       //What transformation occurs in modern digital labyrinths? 
       //Can any transformation occur when the boundaries aren't visible,
       //when we have lost our focus due to unending distractions?
+
+      //I didn't believe in transformation in amusement, 
+      //until my own amusement lead me to a source of transformation
       
       return [new Half(firstHalf, true), new Half(secondHalf, false)];
     }
@@ -504,11 +526,13 @@
     
     params.whole.rotation = random(TWO_PI);
     meldGif.style.transform = "rotate(" + (params.whole.rotation - 3.14159 / 2).toString() + "rad)";
+    splitGif.style.transform = "rotate(" + (params.whole.rotation - 3.14159 / 2).toString() + "rad)";
     
     complete = new Whole();
 
     if (goingInwards == false){
       document.getElementById("meld-gif-container").style.display = "none";
+      document.getElementById("split-gif-container").style.opacity = "1";
     }
   }
 

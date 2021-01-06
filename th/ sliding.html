@@ -24,6 +24,8 @@
   <script>
     window.onbeforeunload = function() {};
 
+    let goingInwards = true;
+
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
@@ -36,11 +38,11 @@
       window.location.href = webpages[webpageIndex];
     }
 
-
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      goingInwards = false;
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -67,6 +69,8 @@
     maxShapeWidth: 0.25,
     minShapeHeight: 0.1,
     maxShapeHeight: 0.25,
+    amplitude: 0.02,
+    baseFrequency: 0,
     
     reset: function() {
       resetShapes();
@@ -95,6 +99,10 @@
   pathStepsFolder.add(params, "maxNumberOfPathSteps", 1, 10, 1).name("Max. Steps");
   pathStepsFolder.add(params, "minNewPositionOffset", 0, 1).name("Min. Offset");
   pathStepsFolder.add(params, "maxNewPositionOffset", 0, 1).name("Max. Offset");
+
+  let soundFolder = gui.addFolder("Sounds");
+  soundFolder.add(params, "amplitude", 0, 1).name("Volume");
+  soundFolder.add(params, "baseFrequency", 0, 100).name("Base Freq.");
 
   gui.add(params, "numberOfShapes", 1, 100, 1).name("Num. Shapes");
 
@@ -125,6 +133,7 @@
       this.directionOfTravel = this.path[0].direction;
       this.finalPosition = {x: this.path[this.path.length - 1].x, y: this.path[this.path.length - 1].y};
       this.inPlace = false;
+      this.osc = new p5.Oscillator('square');
     }
     
     goToNextPathStep(){
@@ -133,6 +142,7 @@
       
       if (this.currentPathIndex == this.path.length){
         this.inPlace = true;
+        this.osc.amp(0, 1);
         return;
       }
       this.currentPathPosition = this.path[this.currentPathIndex - 1];
@@ -178,27 +188,6 @@
               newX = 0;
             }
             break;
-            /*
-          case "NORTH-EAST":
-            offset = random(50, windowHeight/2);
-            newX = currentX + offset;
-            newY = currentY - offset;
-            break;
-          case "NORTH-WEST":
-            offset = random(50, windowHeight/2);
-            newX = currentX - offset;
-            newY = currentY - offset;
-            break;
-          case "SOUTH-EAST":
-            offset = random(50, windowHeight/2);
-            newX = currentX + offset;
-            newY = currentY + offset;
-            break;
-          case "SOUTH-WEST":
-            offset = random(50, windowHeight/2);
-            newX = currentX - offset;
-            newY = currentY + offset;
-            break;*/
         }
         path.push({x: newX, y: newY, direction: direction});
         currentX = newX;
@@ -221,6 +210,8 @@
       //In the end, that is all there is.
       //That is there is what is, isn't it?
       //It isn't what I think it is.
+
+      //(The above is a commentary on over-commentating)
       
       let newDirection;
       
@@ -318,8 +309,6 @@
         }
       }
 
-      //There can only be [[[1,1]][0]][0][1]
-
       //Top right corner of the screen.
       if (x >= windowWidth / 2 && y < windowHeight / 2){
         newDirection = ["SOUTH", "WEST", "SOUTH-WEST"][(Math.random() * 3) | 0];
@@ -334,6 +323,7 @@
       if (x < windowWidth / 2 && y >= windowHeight / 2){
         newDirection = ["NORTH", "EAST", "NORTH-EAST"][(Math.random() * 3) | 0];
       }
+
       */
       
       return newDirection;
@@ -364,6 +354,7 @@
         switch (this.directionOfTravel) {
           case "NORTH":
             this.y = mouseY + this.offsetY;
+            this.osc.freq(params.baseFrequency + this.y, 0);
             if (this.y <= this.currentPathDestination.y){
               this.y = this.currentPathDestination.y;
               this.goToNextPathStep();
@@ -371,6 +362,7 @@
             break;
           case "SOUTH":
             this.y = mouseY + this.offsetY;
+            this.osc.freq(params.baseFrequency + this.y, 0);
             if (this.y >= this.currentPathDestination.y){
               this.y = this.currentPathDestination.y;
               this.goToNextPathStep();
@@ -378,6 +370,7 @@
             break;
           case "EAST":
             this.x = mouseX + this.offsetX;
+            this.osc.freq(params.baseFrequency + this.x, 0);
             if (this.x >= this.currentPathDestination.x){
               this.x = this.currentPathDestination.x;
               this.goToNextPathStep();
@@ -385,80 +378,45 @@
             break;
           case "WEST":
             this.x = mouseX + this.offsetX;
+            this.osc.freq(params.baseFrequency + this.x, 0);
             if (this.x <= this.currentPathDestination.x){
               this.x = this.currentPathDestination.x;
               this.goToNextPathStep();
             }
             break;
-            /*
-          case "NORTH-EAST":
-            xDifference = (mouseX + this.offsetX) - this.x;
-            yDifference = (mouseY + this.offsetY) - this.y;
-            if (xDifference > yDifference){
-              this.x = mouseX + this.offsetX;
-              this.y -= xDifference;
-            } else {
-              this.y = mouseY + this.offsetY;
-              this.x += yDifference;
-            }
-            break;
-          case "NORTH-WEST":
-            xDifference = (mouseX + this.offsetX) - this.x;
-            yDifference = (mouseY + this.offsetY) - this.y;
-            if (xDifference > yDifference){
-              this.x = mouseX + this.offsetX;
-              this.y -= xDifference;
-            } else {
-              this.y = mouseY + this.offsetY;
-              this.x += yDifference;
-            }
-            break;
-          case "SOUTH-EAST":
-            xDifference = (mouseX + this.offsetX) - this.x;
-            yDifference = (mouseY + this.offsetY) - this.y;
-            if (xDifference > yDifference){
-              this.x = mouseX + this.offsetX;
-              this.y -= xDifference;
-            } else {
-              this.y = mouseY + this.offsetY;
-              this.x += yDifference;
-            }
-            break;
-          case "SOUTH-WEST":
-            xDifference = (mouseX + this.offsetX) - this.x;
-            yDifference = (mouseY + this.offsetY) - this.y;
-            if (xDifference > yDifference){
-              this.x = mouseX + this.offsetX;
-              this.y -= xDifference;
-            } else {
-              this.y = mouseY + this.offsetY;
-              this.x += yDifference;
-            }
-            break;
-            */
         }
-      }
-      
-      if (this.checkIfMouseOver() === false){
-        this.released();
       }
     }
     
     showEndPosition(){
-      fill('white');
+      if (goingInwards) {
+        fill('white');
+      } else {
+        fill('black');
+      }
       rect(this.finalPosition.x, this.finalPosition.y, this.w, this.h);
     }
 
     show() {
-      stroke("black");
-      fill("black");
+      if (goingInwards) {
+        stroke("black");
+        fill("black");
+      } else {
+        stroke("white");
+        fill("white");
+      }
+
       rect(this.x, this.y, this.w, this.h);
       
       if (this.inPlace){
         return;
       }
       
-      fill("white");
+      if (goingInwards){
+        fill("white");
+      } else {
+        fill("black");
+      }
       
       push();
       
@@ -519,15 +477,21 @@
       
       if (mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h) {
         this.dragging = true;
-        // If so, keep track of relative location of click to corner of rectangle
+        // Keep track of relative location of click to corner of rectangle
         this.offsetX = this.x - mouseX;
         this.offsetY = this.y - mouseY;
+
+        userStartAudio();
+        this.osc.start();
+        this.osc.amp(params.amplitude, 0.1);
       }
     }
 
     released() {
-      // Quit dragging
       this.dragging = false;
+      if (this.inPlace == false){
+        this.osc.amp(params.amplitude / 2, 0.1);
+      }
     }
   }
 
@@ -556,11 +520,14 @@
     frameRate(60);
     
     resetShapes();
-
   }
 
   function draw() {
-    background('white');
+    if (goingInwards) {
+      background('white');
+    } else {
+      background('black');
+    }
     
     for (let i = 0; i < shapes.length; i++){
       shapes[i].showEndPosition();
@@ -614,7 +581,6 @@
   function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
   }
-
   </script>
 </body>
 </html>

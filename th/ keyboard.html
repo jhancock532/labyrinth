@@ -71,6 +71,12 @@
                "c4", "a5", "e5", "c4", "a5", "e5",
                "d4", "a5", "f5", "d4", "a5", "f5",
                "d4", "gs4", "f5", "d4", "gs4", "f5"];
+
+  let darkMusic = ["a3", "e3", "c4", "a3", "e3", "c4",
+               "b3", "e3", "d4", "b3", "e3", "d4",
+               "c3", "a4", "e4", "c3", "a4", "e4",
+               "d3", "a4", "f4", "d3", "a4", "f4",
+               "d3", "gs3", "f4", "d3", "gs3", "f4"];
   //Adapted from https://musescore.com/user/13609706/scores/5067501, thanks chakktheripper
   //Related to https://www.youtube.com/watch?v=XA4ERjS30y4 - the use of the fantastical, some parallels with Phillip Pullman's writing
 
@@ -352,7 +358,15 @@
     playSynth() {
       userStartAudio();
 
-      let note = music[this.noteToPlay];
+
+      let note, velocity;
+      if (goingInwards){
+        note = music[this.noteToPlay];
+        velocity = 0.5;
+      } else {
+        note = darkMusic[this.noteToPlay];
+        velocity = 0.8;
+      }
 
       if (goingInwards){
         this.noteToPlay += 1;
@@ -365,8 +379,7 @@
           this.noteToPlay = music.length - 1;
         }
       }
-      
-      let velocity = 0.5;
+
       let time = 0;
       let dur = 1/8;
 

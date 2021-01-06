@@ -183,8 +183,14 @@
         push();
         translate(particle.x, particle.y);
         rotate(particle.rotation);
-        stroke("black");
-        fill("white");
+        if (goingInwards){
+          stroke("black");
+          fill("white");
+        } else {
+          stroke("white");
+          fill("black");
+        }
+
         strokeWeight(params.smash.strokeThickness);
         
         beginShape();
@@ -229,7 +235,6 @@
       this.alive = true;
       this.invulnerabilityFrames = 5;
 
-      this.notesToPlay = ["G5", "B5", "D5", "E5"];
       this.monoSynth = new p5.MonoSynth();
       this.monoSynth.setADSR(0.8, 0.3, 0.1, 0.7);
     }
@@ -266,9 +271,14 @@
 
             isAnybodyOutThere = true;
 
-        stroke("black");
-
+        if (goingInwards){
+          stroke("black");
           fill("white");
+        } else {
+          stroke("white");
+          fill("black");
+        }
+
 
         //Existing is black and white
         //Or at least, that's how we think it is.
@@ -342,6 +352,9 @@
       space.smashEffects.push(new SmashEffect(this.position.x, this.position.y));
       if (this.level > 1){
         let numberOfBabyAsteroids = round(random(1, params.maxBabyAsteroids));
+        if (this.level == 4){
+          numberOfBabyAsteroids = 2;
+        }
         for (let i = 0; i < numberOfBabyAsteroids; i++){
           let newPosition = {x: this.position.x, y: this.position.y}
           this.childAsteroids.push(new Asteroid(newPosition, this.level-1));
@@ -355,8 +368,15 @@
     playSynth() {
       userStartAudio();
         
-      let note = this.notesToPlay[floor(random(this.notesToPlay.length))];
-      let velocity = this.level / 8;
+      let notes;
+
+      if (goingInwards){
+        notes = ["G5", "B5", "D5", "E5"];
+      } else {
+        notes = ["Gs4", "B4", "Ds4", "E4"];
+      }
+      let note = notes[floor(random(notes.length))];
+      let velocity = this.level / 5;
       let time = 0;
       let dur = 1/8;
   
@@ -381,7 +401,12 @@
     }
     
     draw(){
-      background("white");
+      if (goingInwards){
+        background("white");
+      } else {
+        background("black");
+      }
+
       strokeWeight(1);
       for (let i = 0; i < this.asteroids.length; i++){
         this.asteroids[i].draw();

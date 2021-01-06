@@ -169,7 +169,7 @@
   </div>
     
   <div id="scroll-indicator">
-    <img src="img/scroll-gif.gif" style="height: 80px">
+    <img src="img/scroll.gif" style="height: 80px">
   </div>
 
   <script>
@@ -355,6 +355,10 @@
         modifyCanvasHeight(-17);
         modifyCanvasWidth(17);
 
+        scrollIndicator.style.top = "25%";
+        scrollIndicator.style.left = "25%";
+        scrollIndicator.style.transform = "translate(-50%, -50%) rotate(270deg)";
+
         location.href = "#right";
         document.title = "⍈";
       }
@@ -369,6 +373,10 @@
         sectionFour.style.display = "block";
         
         scrollRightContainer.style.overflowX = "hidden";
+
+        scrollIndicator.style.top = "25%";
+        scrollIndicator.style.left = "75%";
+        scrollIndicator.style.transform = "translate(-50%, -50%) rotate(0deg)";
         
         modifyCanvasHeight(17);
         modifyCanvasWidth(-17);
@@ -391,6 +399,10 @@
         scrollDownContainer.style.overflowY = "hidden";
         scrollRightContainer.style.overflowX = "scroll";
         scrollRightContainer.style.overflowY = "hidden";
+
+        scrollIndicator.style.top = "75%";
+        scrollIndicator.style.left = "75%";
+        scrollIndicator.style.transform = "translate(-50%, -50%) rotate(90deg)";
         
         modifyCanvasHeight(-17);
         modifyCanvasWidth(17);
