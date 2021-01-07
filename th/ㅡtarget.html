@@ -30,7 +30,7 @@
       overflow: hidden;
     }
   </style>
-
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 <body>
   <script>
@@ -51,6 +51,7 @@
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
     
     nextWebpageURL = webpages[webpageIndex];

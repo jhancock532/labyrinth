@@ -65,7 +65,7 @@
       animation-delay: 4s;
     }
   </style>
-
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -80,10 +80,10 @@
     const webpageDirection = window.localStorage.getItem("direction");
   
     if (webpageDirection != "inwards"){
-      
       document.getElementById("exit-button-container").style.background = "black";
       document.getElementById("exit-button").style.filter = "invert(1)";
       document.getElementById("indicator-arrow").style.filter = "invert(1)";
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
   </script>
 

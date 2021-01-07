@@ -32,6 +32,7 @@
     transform: translate(-50%, -50%);
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -50,6 +51,7 @@
 
     const nextWebpageURL = webpages[webpageIndex];
     window.localStorage.setItem("index", webpageIndex.toString());
+    document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
   </script>
 
   <div id="background">
@@ -64,11 +66,11 @@
     let backgroundElement = document.getElementById("background");
     let hint = document.getElementById("hint");
     let waitingForAnimationFrame = false, scrollPosition;
-    let hideTheHint = false;
+    let hideTheHint = 0;
 
     if (goingInwards){
       scrollPosition = 0;
-      hideTheHint = true;
+      hideTheHint = 1;
     } else {
       window.scrollTo(0, document.body.scrollHeight);
       scrollPosition = window.scrollY;
@@ -82,7 +84,7 @@
       //Copied maths from here to find scroll percentage.
       //https://codepen.io/achudars/pen/Cpast
 
-      if (hideTheHint){
+      if (hideTheHint == 2){
         hint.style.display = "none";
       }
 
@@ -109,6 +111,7 @@
         if (scrollPercent >= notMyBirthYear / 1000){
           window.location.href = nextWebpageURL;
         }
+        hideTheHint += 1;
       } else {
         console
           .log("⇧");
@@ -116,7 +119,7 @@
         if (scrollPercent <= 0){
           window.location.href = nextWebpageURL;
         }
-        hideTheHint = true;
+        hideTheHint += 1;
       }
 
     });

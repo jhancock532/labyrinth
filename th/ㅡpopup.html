@@ -24,8 +24,42 @@
 
       #popup {
         cursor: pointer;
+        animation-name: heartbeat; 
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-duration: 4s;
+      }
+
+      /*https://stackoverflow.com/questions/34762009/pulsing-heart-css-animation*/
+      @keyframes heartbeat
+      {
+        0%
+        {
+          transform: scale( .9 );
+        }
+        10%
+        {
+          transform: scale( 1 );
+        }
+        20%
+        {
+          transform: scale( .9 );
+        }
+        30%
+        {
+          transform: scale( 1 );
+        }
+        40%
+        {
+          transform: scale( .9 );
+        }
+        100%
+        {
+          transform: scale( .9 );
+        }
       }
     </style>
+    <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
   </head>
 <body>
 
@@ -58,6 +92,7 @@
     goingInwards = false;
     document.getElementById("hint").style.filter = "invert(1)";
     document.getElementsByTagName("body")[0].style.background = "black";
+    document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
   }
 
   const nextWebpageURL = webpages[webpageIndex];
@@ -66,7 +101,7 @@
 
 <script>
 function openWindow() {
-  var exitWindow = window.open("/th/%20close.html", "exit", "width=600,height=500");
+  var exitWindow = window.open("/th/%E3%85%A1close.html", "exit", "width=600,height=500");
 
   setTimeout(function(){
     if(!exitWindow || exitWindow.closed || typeof exitWindow.closed=='undefined') {

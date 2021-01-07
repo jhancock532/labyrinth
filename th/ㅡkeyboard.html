@@ -18,6 +18,7 @@
     z-index: -1;
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -33,6 +34,7 @@
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];

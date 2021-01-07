@@ -19,23 +19,22 @@
     z-index: -1;
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
   <script>
-
     let goingInwards = true;
     const webpages = JSON.parse(window.localStorage.getItem("webpages"));
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
-
-
 
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];

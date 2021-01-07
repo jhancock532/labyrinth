@@ -4,19 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-white-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-white-16x16.png">
   
   <title>⎅</title> 
   <!-- (๑*◡*๑) ٩(❛ัᴗ❛ั⁎)ೄ -->
   <meta name="description" content="ī̧̊̌̑̂ͮ͒̏̉̿͛̿̏ͮ͂ͦ̀͢͞͏̭̺̯̲̩̤̫͙̱͈̘̹̬͚̪͚̯ͅ A labyrinth. ī̧̊̌̑̂ͮ͒̏̉̿͛̿̏ͮ͂ͦ̀͢͞͏̭̺̯̲̩̤̫͙̱͈̘̹̬͚̪͚̯ͅ">
-
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
   <script>
-    window.onbeforeunload = function() {};
-
     //webpages appear in order of traversal.
     let websiteList = [
       "%E3%85%A1entrance.html", 
@@ -43,20 +39,28 @@
     window.localStorage.setItem("direction", "inwards");
     window.localStorage.setItem("goneBack", "false");
     window.localStorage.setItem("refreshed", "false");
-    window.localStorage.setItem("debugging", "false");
-
-    window.location.href = "%E3%85%A1entrance.html";
   </script>
-  <!--If you want to access individual pages of the labyrinth, 
-      you're probably looking for %20index.html. This page links to the labyrinth in debugging mode.
+  <ul>
+    <li><a href="%E3%85%A1entrance.html">entrance.html</a></li>
+    <li><a href="%E3%85%A1scrolling.html">scrolling.html</a></li>
+    <li><a href="%E3%85%A1broken.html">broken.html</a></li>
+    <li><a href="%E3%85%A1harmony.html">harmony.html</a></li>
+    <li><a href="%E3%85%A1keyboard.html">keyboard.html</a></li>
 
-      Chrome doesn't allow for space gaps in URLs, so time to choose a different url gap
+    <li><a href="%E3%85%A1going.html">going.html</a></li>
+    <li><a href="%E3%85%A1sliding.html">sliding.html</a></li>
+    <li><a href="%E3%85%A1back.html">back.html</a></li>
+    <li><a href="%E3%85%A1popup.html">popup.html</a></li>
+    <li><a href="%E3%85%A1close.html">close.html</a></li>
 
-      ㅡ %E3%85%A1
-      ▁ %E2%96%81
-      ␣ %E2%90%A3
-    
-      - https://tools.ietf.org/html/rfc3986#page-16 - 
-  -->
+    <li><a href="%E3%85%A1target.html">target.html</a></li>
+    <li><a href="%E3%85%A1loading.html">loading.html</a></li>
+    <li><a href="%E3%85%A1resize.html">resize.html</a></li>
+    <li><a href="%E3%85%A1refresh.html">refresh.html</a></li>
+    <li><a href="%E3%85%A1center.html">center.html</a></li>
+    <br>
+    <li><a href="/th/undefined/">undefined</a></li>
+    <li><a href="/th/%E3%85%A1mirror%E3%85%A1%E2%80%96%E3%85%A1%C9%BFo%C9%BF%C9%BFim%E3%85%A1%E2%A7%B5%CA%9C%C9%88%E2%A7%B5ni.%C9%BF%CE%B3d%C9%92l%E2%A7%B5%E2%A7%B5%EA%9E%89%C6%A8q%C9%88%C9%88%CA%9C">mirror.html</a></li>
+  </ul>
 </body>
 </html>

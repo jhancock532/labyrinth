@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-
+  
   <title>ꝇ</title>
   <meta name="description" content="Halves of wholes.">
 
@@ -51,6 +51,7 @@
     }
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -78,6 +79,7 @@
       webpageIndex -= 1;
       goingInwards = false;
       splitGif.style.opacity = "1";
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -176,12 +178,12 @@
 
       if (goingInwards) {
         this.rotation = random(params.parts.minRotation, params.parts.maxRotation);
-        this.noise = new p5.Noise("white");
-        this.noise.start();
-        this.noise.amp(0.01, 0);
+        //this.noise = new p5.Noise("white");
+        //this.noise.start();
+        //this.noise.amp(0.01, 0);
       } else {
         this.rotation = 0.01; //Show there is a crack, interaction indicator
-        this.noise = new p5.Noise("brown");
+        //this.noise = new p5.Noise("brown");
       }
 
       this.topHalf = isTopHalf;
@@ -413,7 +415,7 @@
           this.dragging = false;
           if (goingInwards){
             this.inPlace = true;
-            this.noise.amp(0, 1);
+            //this.noise.amp(0, 1);
           }
         }
         
@@ -422,8 +424,8 @@
           this.dragging = false;
           if (goingInwards == false){
             this.inPlace = true;
-            this.noise.start();
-            this.noise.amp(0.01, 0);
+            //this.noise.start();
+            //this.noise.amp(0.01, 0);
           }
         }
         

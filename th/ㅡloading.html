@@ -19,6 +19,7 @@
     z-index: -1;
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -33,6 +34,7 @@
       webpageIndex += 1;
     } else {
       webpageIndex -= 1;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -138,7 +140,11 @@
       this.currentIntervalFrame = 0;
       this.running = false;
       
-      this.noteToPlay = "f4";
+      if (webpageDirection == "inwards"){
+        this.noteToPlay = "f4"; 
+      } else {
+        this.noteToPlay = "f5";
+      }
       this.monoSynth = new p5.MonoSynth();
       this.monoSynth.setADSR(0.1, 0.1, 1, 0.8);
     }
@@ -178,7 +184,12 @@
         this.currentTime += 1;
         
         if (this.currentTime == this.numberOfTicks){
-          this.noteToPlay = 'f5';
+          if (webpageDirection == "inwards"){
+            this.noteToPlay = 'f5';
+          } else {
+            this.noteToPlay = 'f4';
+          }
+          
         }
         
         if (this.currentTime <= this.numberOfTicks){
@@ -285,6 +296,10 @@
   }
 
   function draw() {
+    if (webpageDirection != "inwards"){
+      background("black");
+    }
+
     if (frameCount >= 142 && clock.running == false){
       //The average attention span for mobile users on Facebook
       //According to a dodgy source - https://muckrack.com/blog/2020/07/14/how-declining-attention-spans-impact-your-social-media
@@ -395,7 +410,7 @@
     
     render() {
       if (webpageDirection == "inwards"){
-      background('white');
+        background('white');
       } else {
         background('black');
       }

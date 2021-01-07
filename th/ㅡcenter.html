@@ -18,7 +18,7 @@
       z-index: -1;
     }
       
-    .labyrinth-container {
+    #labyrinth-container {
       position: fixed;
       top: 0;
       bottom: 0;
@@ -29,7 +29,50 @@
       align-items: center;
     }
 
-    .labyrinth {
+    #arrow {
+      position: fixed;
+      top: 50%;
+      left: 50.5%;
+      height: 50px;
+      /* Relative to center for responsive positioning */
+      transform: translate(0, 38vh);
+      opacity: 1;
+      transition: opacity 1s;
+      animation-name: pushUpwards; 
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-duration: 4s;
+    }
+
+    @keyframes pushUpwards
+    {
+      0%
+      {
+        transform: translate(0, 38vh);
+      }
+      10%
+      {
+        transform: translate(0, 35vh);
+      }
+      20%
+      {
+        transform: translate(0, 38vh);
+      }
+      30%
+      {
+        transform: translate(0, 35vh);
+      }
+      40%
+      {
+        transform: translate(0, 38vh);
+      }
+      100%
+      {
+        transform: translate(0, 38vh);
+      }
+    }
+
+    #labyrinth {
       max-height: 80vh;
     }
 
@@ -46,13 +89,17 @@
       backdrop-filter: invert(100%);
     }*/
   </style>
-
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
 
-  <div class="labyrinth-container">
-    <img class="labyrinth" src="img/cropped labyrinth.png"/>
+  <div id="labyrinth-container">
+    <img id="labyrinth" src="img/cropped labyrinth.png"/>
+  </div>
+
+  <div id="arrow-container">
+    <img id="arrow" src="img/arrow.png">
   </div>
 
   <!--<div class="circle"></div>-->
@@ -107,7 +154,7 @@
     lineDashSize: 0,
     lineDashGap: 4,
     debugCenter: false,
-    playMusic: false,
+    playMusic: true,
     reset: function(){
       currentCheckpoint = 0;
       goingOutwards = false;
@@ -252,7 +299,7 @@
   }
 
   function setCursor(style){
-    document.getElementsByClassName("labyrinth-container")[0].style.cursor = style;
+    document.getElementById("labyrinth-container").style.cursor = style;
   }
 
   function draw(){
@@ -329,6 +376,9 @@
           currentCheckpoint -= 1;
         } else {
           currentCheckpoint += 1;
+          if (currentCheckpoint == 1){
+            document.getElementById("arrow").style.opacity = "0";
+          }
         }
       }
 
@@ -366,9 +416,10 @@
   }
 
   function goBack(){
+    document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     goingOutwards = true;
     currentCheckpoint = checkpoints.length - 1;
-    document.getElementsByClassName("labyrinth")[0].style.filter = "invert(100%)";
+    document.getElementById("labyrinth").style.filter = "invert(100%)";
     params.debugCenter = false;
     setCursor("default");
   }

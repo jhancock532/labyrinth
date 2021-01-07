@@ -18,6 +18,7 @@
     z-index: -1;
   }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -43,6 +44,7 @@
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];
@@ -70,6 +72,7 @@
     minShapeHeight: 0.1,
     maxShapeHeight: 0.25,
     amplitude: 0.02,
+    amplitudeOutwards: 0.04,
     baseFrequency: 0,
     
     reset: function() {
@@ -101,7 +104,8 @@
   pathStepsFolder.add(params, "maxNewPositionOffset", 0, 1).name("Max. Offset");
 
   let soundFolder = gui.addFolder("Sounds");
-  soundFolder.add(params, "amplitude", 0, 1).name("Volume");
+  soundFolder.add(params, "amplitude", 0, 1).name("Square Volume");
+  soundFolder.add(params, "amplitudeOutwards", 0, 1).name("Triangle Volume");
   soundFolder.add(params, "baseFrequency", 0, 100).name("Base Freq.");
 
   gui.add(params, "numberOfShapes", 1, 100, 1).name("Num. Shapes");
@@ -133,7 +137,12 @@
       this.directionOfTravel = this.path[0].direction;
       this.finalPosition = {x: this.path[this.path.length - 1].x, y: this.path[this.path.length - 1].y};
       this.inPlace = false;
-      this.osc = new p5.Oscillator('square');
+      if (goingInwards){
+        this.osc = new p5.Oscillator('square');
+      } else {
+        this.osc = new p5.Oscillator('triangle');
+      }
+      
     }
     
     goToNextPathStep(){
@@ -483,14 +492,23 @@
 
         userStartAudio();
         this.osc.start();
-        this.osc.amp(params.amplitude, 0.1);
+        if (goingInwards){
+          this.osc.amp(params.amplitude, 0.1);
+        } else {
+          this.osc.amp(params.amplitudeOutwards, 0.1);
+        }
+        
       }
     }
 
     released() {
       this.dragging = false;
       if (this.inPlace == false){
-        this.osc.amp(params.amplitude / 2, 0.1);
+        if (goingInwards){
+          this.osc.amp(params.amplitude / 2, 0.1);
+        } else {
+          this.osc.amp(params.amplitudeOutwards / 2, 0.1);
+        }
       }
     }
   }

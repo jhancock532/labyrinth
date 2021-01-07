@@ -36,7 +36,6 @@
       position: fixed;
       opacity: 0;
       transition: opacity 1s;
-      height: 50px;
       bottom: 0%;
       right: 0%;
       filter: invert(1);
@@ -53,6 +52,13 @@
     #resize-to-here-indicators > img {
       height: 50px;
       position: fixed;
+    }
+
+    #resize-window {
+      width: 50%;
+      height: 50%;
+      transform: translateX(100%);
+      opacity: 1;
     }
 
     #arrowOne {
@@ -87,6 +93,7 @@
       right: 5%;
     }
   </style>
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
 </head>
 
 <body>
@@ -137,6 +144,8 @@
       arrowTwo.style.filter = "none";
       arrowThree.style.filter = "invert(1)";
       arrowFour.style.filter = "none";
+
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     nextWebpageURL = webpages[webpageIndex];
@@ -253,6 +262,11 @@ class Frame {
         if (this.currentStep == this.maxSteps){
           this.currentFrameSize.width = this.originalWidth;
           this.currentFrameSize.height = this.originalHeight;
+          arrowOne.style.transition = "opacity 0s";
+          arrowTwo.style.transition = "opacity 0s";
+          arrowThree.style.transition = "opacity 0s";
+          arrowFour.style.transition = "opacity 0s";
+
           arrowOne.style.opacity = 0;
           arrowTwo.style.opacity = 0;
           arrowThree.style.opacity = 0;
@@ -298,6 +312,7 @@ function setup() {
 }
 
 let windowRestoredDown = false;
+let resizeFrames = 0;
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
@@ -310,6 +325,12 @@ function windowResized() {
     arrowThree.style.opacity = "1";
     arrowFour.style.opacity = "1";
     windowRestoredDown = true;
+  }
+
+  resizeFrames += 1;
+
+  if (resizeFrames == 5){
+    document.getElementById("resize-window-hint").style.opacity = "0";
   }
 
   frame.checkWindowSize();
