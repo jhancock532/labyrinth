@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /th/js/
+Disallow: /th/img/
