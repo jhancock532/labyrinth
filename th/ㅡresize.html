@@ -258,8 +258,10 @@ class Frame {
       if (windowHeight >= this.currentFrameSize.height - params.marginOfError / 2
          && windowHeight <= this.currentFrameSize.height + params.marginOfError / 2){
         this.currentFrameSize = this.generateNewFrame();
+        if (this.currentStep < this.maxSteps){
+          this.playSynth();
+        }
         this.currentStep += 1;
-        this.playSynth();
         if (this.currentStep == this.maxSteps){
           this.currentFrameSize.width = this.originalWidth;
           this.currentFrameSize.height = this.originalHeight;

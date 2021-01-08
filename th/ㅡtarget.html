@@ -458,7 +458,10 @@
     space.draw();
     if (isAnybodyOutThere == false && movedOn == false){
       movedOn = true;
-      window.location.href = nextWebpageURL;
+      setTimeout(function(){
+        window.location.href = nextWebpageURL;
+      }, 2000);
+      
     }
   }
   

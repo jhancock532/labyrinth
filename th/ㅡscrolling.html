@@ -7,6 +7,8 @@
   <title>⬇</title><!--I think a max of one character is good enough for titles.-->
   <meta name="description" content="Down the corridor.">
   <meta name="robots" content="noindex,nofollow">
+
+  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
   <!-- Who needs a static site generator when you have a keyboard? -->
 
   <style>
@@ -33,7 +35,7 @@
     transform: translate(-50%, -50%);
   }
   </style>
-  <link rel="shortcut icon" type="image/png" href="/favicon-white-32x32.png">
+  
 </head>
 
 <body>
@@ -48,11 +50,12 @@
     } else {
       webpageIndex -= 1;
       goingInwards = false;
+      document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
 
     const nextWebpageURL = webpages[webpageIndex];
     window.localStorage.setItem("index", webpageIndex.toString());
-    document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
+    
   </script>
 
   <div id="background">
