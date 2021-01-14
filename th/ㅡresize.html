@@ -253,6 +253,13 @@ class Frame {
   }
   
   checkWindowSize(){
+    //If the user doesn't start out with a fullscreen so the fullscreen button resizes to greater than the original window size
+    if (this.currentStep == this.maxSteps){ 
+      if (windowWidth >= this.currentFrameSize.width && windowHeight >= this.currentFrameSize.height){
+        window.location.href = nextWebpageURL;
+      }
+    }
+
     if (windowWidth >= this.currentFrameSize.width - params.marginOfError / 2 
         && windowWidth <= this.currentFrameSize.width + params.marginOfError / 2 ){
       if (windowHeight >= this.currentFrameSize.height - params.marginOfError / 2
