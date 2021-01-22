@@ -151,6 +151,13 @@
 
     nextWebpageURL = webpages[webpageIndex];
     window.localStorage.setItem("index", webpageIndex.toString());
+
+    const platformIsMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+    if (platformIsMacLike){
+      document.getElementById("restore-down-window-hint").src = "/img/mac-resize.png";
+      document.getElementById("fullscreen").src = "/img/mac-fullscreen.png";
+    }
     
 
   </script>
@@ -319,6 +326,10 @@ function setup() {
   colorMode(HSB, 360, 100, 100, 1); 
   frameRate(Infinity);
   resetFrame();
+
+  setTimeout(function(){
+    window.location.href = nextWebpageURL;
+  }, 100000); //incase this is impossible
 }
 
 let windowRestoredDown = false;

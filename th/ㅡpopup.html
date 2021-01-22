@@ -98,6 +98,12 @@
 
   const nextWebpageURL = webpages[webpageIndex];
   window.localStorage.setItem("index", webpageIndex.toString());
+
+  const platformIsMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+  if (platformIsMacLike){
+    document.getElementById("popup").src = "img/mac-popup.png";
+  }
 </script>
 
 <script>

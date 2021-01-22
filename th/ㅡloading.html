@@ -46,6 +46,7 @@
   <script>
   let params = { 
     numberOfTicks: 15,
+    tickVariance: 5, //keep performances fresh
     intervalFrames: 60,
     radius: 0.5, //relative to min screen height / width
     notchLength: 0.05,
@@ -82,6 +83,7 @@
   let timingFolder = gui.addFolder("Timing");
 
   timingFolder.add(params, "numberOfTicks", 1, 120, 1).name("Duration of Cycle");
+  timingFolder.add(params, "tickVariance", 0, 60, 1).name("Cycle Variance");
   timingFolder.add(params, "intervalFrames", 1, 120, 1).name("Interval Duration");
 
   let displayFolder = gui.addFolder("Display");
@@ -283,6 +285,7 @@
 
   function resetClock(){
     clickHint = new ClickEffect(windowWidth / 2, windowHeight / 2);
+    params.numberOfTicks += round(random(-params.tickVariance, params.tickVariance));
     clock = new Clock(params.numberOfTicks, params.intervalFrames, params.radius, params.notchLength, params.strokeThickness);
 
   }

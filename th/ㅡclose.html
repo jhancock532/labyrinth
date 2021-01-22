@@ -86,6 +86,13 @@
       document.getElementById("indicator-arrow").style.filter = "invert(1)";
       document.querySelector("link[rel~='icon']").href = "/favicon-black-32x32.png";
     }
+
+    const platformIsMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
+    if (platformIsMacLike) {
+      document.getElementById("indicator-arrow").style.display = "none";
+      document.getElementById("exit-button").src = "img/mac-close.png";
+    }
   </script>
 
   <script>

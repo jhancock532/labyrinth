@@ -412,6 +412,9 @@
     rectMode(CENTER);
     
     resetKeyboard();
+    setTimeout(function(){
+      window.location.href = nextWebpageURL;
+    }, 100000); //incase this is impossible (mobile users)
   }
 
   function draw() {
