@@ -45,7 +45,7 @@
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
 
-    const platformIsMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+    
 
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
@@ -57,11 +57,6 @@
 
     const nextWebpageURL = webpages[webpageIndex];
     window.localStorage.setItem("index", webpageIndex.toString());
-
-    if (platformIsMacLike){
-      window.location.href = nextWebpageURL;
-    }
-    
   </script>
 
   <div id="background">

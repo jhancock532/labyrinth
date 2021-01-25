@@ -75,6 +75,7 @@
     width: 100vw;
     
     /* This height used to be 96.5vh until I discovered calc(). Why subtract 17px? See https://codepen.io/sambible/post/browser-scrollbar-widths */
+    /* Sadly, mac devices don't have scrollbars, so this doesn't work. */
   }
 
   #down {
@@ -90,7 +91,7 @@
     width: 100vw;
   }
 
-  /* There is not much to contemplate. But what there is, is worthy of contemplation. */
+  /* There is too much to contemplate. What is worthy of contemplation? */
 
   #section-five {
     display: none;
@@ -178,6 +179,8 @@
     let webpageIndex = parseInt(window.localStorage.getItem("index"));
     const webpageDirection = window.localStorage.getItem("direction");
 
+    const platformIsMacLike = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+
     if (webpageDirection == "inwards"){
       webpageIndex += 1;
     } else {
@@ -188,6 +191,10 @@
 
     const nextWebpageURL = webpages[webpageIndex];
     window.localStorage.setItem("index", webpageIndex.toString());
+
+    if (platformIsMacLike){
+      window.location.href = nextWebpageURL;
+    }
   </script>
 
   <script src="js/p5.min.js"></script>
