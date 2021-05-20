@@ -41,14 +41,16 @@
     top: 0;
     left: 0;
     margin: 0;
-    z-index: -1;
+    z-index: 4;
   }
 
   #conclusion {
     opacity: 0;
+    position: relative;
+    pointer-events: none;
     transition: opacity 2s;
     transition-delay: 2s;
-    z-index: 2;
+    z-index: -32;
   }
 
   #google-search-results {
@@ -68,7 +70,9 @@
 
   <p id="conclusion">
     Thank you for visiting my website.<br><br>
-    This labyrinth was created by <a href="http://jameshancock.art">James Hancock</a>.<br>
+    This labyrinth was created by <a href="https://jameshancock.art">James Hancock</a>.<br>
+    To hear of my future work, consider <a href="/th/%E3%85%A1email.html">subscribing to my mailing list</a>.<br>
+    <br>
     Press H when viewing a webpage to see its customisable parameters.<br>
     Go to <a href="/th/%E3%85%A1index.html" rel="nofollow">ㅡindex.html</a> to quickly navigate to different webpages of the site.
   </p>
@@ -275,6 +279,8 @@
     frameCount = 0;
     goingOutwards = false;
     document.getElementById("conclusion").style.opacity = "1";
+    document.getElementById("conclusion").style.pointerEvents = "all";
+    document.getElementById("conclusion").style.zIndex = "55";
     clickHint = new ClickEffect(windowWidth / 2, windowHeight / 2);
   }
 
